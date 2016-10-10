@@ -1,0 +1,11 @@
+all:
+	pdflatex $(FILENAME)
+	bibtex $(FILENAME)
+	pdflatex $(FILENAME)
+	pdflatex $(FILENAME)
+
+clean:
+	rm -f $(FILENAME).aux
+	rm -f $(FILENAME).bbl
+	rm -f $(FILENAME).blg
+	rm -f $(FILENAME).log
