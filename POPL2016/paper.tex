@@ -1678,10 +1678,6 @@ et al.~\cite{sarkar+11}.
 
 \newcommand\soundnesslemma{
 Let $P$ be a C11 program that has no faulty executions. 
-% Suppose also that $p$ contains no forks, joins, locks, or
-% unlocks. JW: We haven't mentioned forks/joins/locks elsewhere in
-% this paper, so I don't think we need to explicitly state their
-% absence here.
 If we compile $P$ to x86 according to the mapping given by Batty et
 al.~\cite{batty+11}, then every valid x86 execution
 corresponds to a C11 execution where $\axSsimp{}$
@@ -1830,19 +1826,7 @@ $p_1 \parallel p_2 \tripleparallel p_3 \parallel p_4 \quadparallel p_5
 \parallel p_6 \tripleparallel p_7 \parallel p_8$,
 to denote a litmus test comprising two devices, each executing two
 work-groups, each containing two threads.
- 
-% The structure also does not differentiate between the case where
-% multiple threads execute the same kernel function on a single
-% device, vs.\ where multiple threads execute different kernel
-% functions on the same device \ADComment{Say what the ramifications
-% of this are, I am not sure, and explain which version we cater for}.
 
-
-% We make the simplifying assumption that each device has the same
-% number and size of work-groups, noting that less uniform spaces can
-% be emulated by having some of the $p$'s as no-ops. A unique
-% identifier for each thread in the system can be obtained by the
-% calculation $\lin(d,w,t) = (d \times \var{Nw}+w) \times \var{Nt}+t$.
 
 \begin{remark}[Limitations]
 %
@@ -3479,7 +3463,6 @@ Matthew Parkinson, Peter Sewell, Tyler Sorensen, and our anonymous
 reviewers for their feedback and encouragement. This work was supported
 by the EPSRC (grants \allyI, \georgeI, \georgeII, and \georgeIII), and
 by the EU FP7 project CARP (project number 287767).
-%Also: Cameron?
 
 \appendix
 
@@ -3799,89 +3782,6 @@ The only departures from our proposal for the C11 memory model
 (Sec.~\ref{appx:c11_proposal}) are the requirement of inclusive
 scopes, and the splitting of happens-before into its global and local
 versions.
-
-% \clearpage
-
-% \section{Raw \cat{} files for the C11 axioms}\label{sec:c11catfiles}
-
-% We give here the \cat{} files that encode the C11 axioms presented
-% in this paper. The models presented here depart slightly from the one
-% presented in \S\ref{sec:c11.cat}, partly for syntactic restrictions in
-% \herd{}, and partly because it includes locks, `consume' atomics, and
-% `unsequenced races', which we do not discuss in the paper.
-
-% \subsection{"c11\_base.cat"}
-% This file contains definitions and axioms that are common to the
-% various versions of the C11 memory model that we present. Throughout
-% the file, definitions carry comments that name the corresponding
-% definitions of Batty et al.'s Lem model.
-% \begin{snugshade}
-% \verbatiminput{herd_tests/c11_base.cat}
-% \end{snugshade}
-
-% \subsection{"c11\_orig.cat"}
-% This file describes the original C11 memory model.
-% \begin{snugshade}
-% \verbatiminput{herd_tests/c11_orig.cat}
-% \end{snugshade}
-
-% \subsection{"c11\_partialSC.cat"}
-% This file describes the C11 memory model after it has been revised to
-% use our \axSpartial{} axiom (cf.~\S\ref{sec:sc-partial}).
-% \begin{snugshade}
-% \verbatiminput{herd_tests/c11_partialSC.cat}
-% \end{snugshade}
-
-% \subsection{"c11\_simp.cat"}
-% This file describes the C11 memory model after it has been further
-% revised to use our \axSsimp{} axiom (cf.~\S\ref{sec:sc-simp}).
-% \begin{snugshade}
-% \verbatiminput{herd_tests/c11_simp.cat}
-% \end{snugshade}
-
-% \clearpage
-
-% \section{Raw \cat{} files for the OpenCL axioms}\label{sec:openclcatfiles}
-
-% We give here the \cat{} files that encode the OpenCL axioms
-% presented in this paper. The models presented here depart slightly
-% from the ones presented in \S\ref{sec:opencl.cat}, partly for syntactic
-% restrictions in \herd{}, and partly because they include barrier
-% divergence, which we do not discuss in the paper.
-
-% \subsection{"opencl\_base.cat"}
-% This file contains definitions and axioms that are common to the
-% various versions of the OpenCL memory model that we present. 
-% %
-% \begin{snugshade}
-% \verbatiminput{herd_tests/opencl_base.cat}
-% \end{snugshade}
-
-% \subsection{"opencl.cat"}
-% This file describes the OpenCL memory model after it has inherited
-% our revisions to the C11 model.
-% \begin{snugshade}
-% \verbatiminput{herd_tests/opencl.cat}
-% \end{snugshade}
-
-% \subsection{"opencl\_scopedsc.cat"}
-% This file describes the OpenCL memory model after it has been revised
-% to use our \axOSscoped{} axiom (cf.~\S\ref{sec:opencl_sc}).
-% \begin{snugshade}
-% \verbatiminput{herd_tests/opencl_scopedsc.cat}
-% \end{snugshade}
-
-% \clearpage
-
-% \section{Excerpt from the OpenCL 2.1 specification}
-
-% For the convenience of readers, the remaining pages of this document
-% provide an extract of the OpenCL specification (Version 2.1, document
-% revision 8) that contains the description of the memory model.
-
-% \setboolean{@twoside}{false}
-
-% \includepdf[offset=20mm -25mm, pages={43-58}]{opencl21_8.pdf}
 
 
 
