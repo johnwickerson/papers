@@ -1,0 +1,123 @@
+\RequirePackage{array}
+\RequirePackage{supertabular}
+\RequirePackage{MathUnicode}
+\newcolumntype{L}{>{$}l<{$}}
+\newcolumntype{C}{>{$}c<{$}}
+\newcolumntype{R}{>{$}r<{$}}
+\RequirePackage{url}
+\RequirePackage{amsmath}
+\RequirePackage{verbatim}
+\RequirePackage{ifthen}
+\RequirePackage{graphicx}
+\RequirePackage{latexsym}
+
+% The following is based upon Paul Taylor's pushright macro
+\newcommand\pushright[1]{{\parfillskip=0pt\widowpenalty=10000%
+  \displaywidowpenalty=10000\finalhyphendemerits=0\unskip\nobreak\hfil\penalty50\hskip.2em%
+  \null\hfill\hfill#1\par}}
+
+% Theorems
+%\RequirePackage{amsthm} ------ removed for ESOP paper
+
+% Removed -- these should be defined on a document-by-document basis.
+% \theoremstyle{plain}
+% \newtheorem{theorem}{Theorem}
+% \newtheorem*{Theorem}{Theorem}
+% \newtheorem{lemma}[theorem]{Lemma}
+% \theoremstyle{definition}
+% \newtheorem{defn}[theorem]{Definition}
+% \newtheorem{remark}[theorem]{Remark}
+% \newtheorem*{Remark}{Remark}
+% \newtheorem{conj}[theorem]{Conjecture}
+% \newtheorem{example}[theorem]{Example}
+
+% Mathclap macros
+\def\clap#1{\hbox to 0pt{\hss#1\hss}}
+\def\mathllap{\mathpalette\mathllapinternal}
+\def\mathrlap{\mathpalette\mathrlapinternal}
+\def\mathclap{\mathpalette\mathclapinternal}
+\def\mathllapinternal#1#2{\llap{$\mathsurround=0pt#1{#2}$}}
+\def\mathrlapinternal#1#2{\rlap{$\mathsurround=0pt#1{#2}$}}
+\def\mathclapinternal#1#2{\clap{$\mathsurround=0pt#1{#2}$}}
+
+% PROOFS AND INFERENCE RULES
+\RequirePackage{mathpartir}
+
+\newcommand{\mathbi}[1]{\mbox{\bfseries \itshape #1}}
+
+% Nabbed from http://www.pst.informatik.uni-muenchen.de/lehre/WS0203/gse/z-notation/
+\def \uminus@sym{\setbox0=\hbox{$\cup$}\rlap{\hbox 
+    to\wd0{\hss\raise0.3ex\hbox{$\scriptscriptstyle{-}$}\hss}}\box0}
+\def \uminus    {\mathrel{\uminus@sym}}
+
+% LOGIC
+\newcommand{\pow}{\mathop{\mbox{$\mathcal{P}$}}}
+\newcommand{\fv}{\mathop{\mathit{fv}}}
+\newcommand{\dom}{\mathop{\mathrm{dom}}}
+\newcommand{\ran}{\mathop{\mathit{ran}}}
+\newcommand{\mods}{\mathop{\mathit{mods}}}
+\newcommand{\hook}[1]{\smash{\stackrel{\makebox[0pt][c]{\raisebox{2pt}{$\leftharpoonup$}}}{\smash{#1}}}}
+\newcommand{\prov}[1][]{\ifthenelse{\equal{#1}{}}{\mathop{\vdash}}{\mathop{\vdash_{{\sf #1}}}}}
+\newcommand{\Prov}[2][]{\ifthenelse{\equal{#1}{}}{\mathop{\vdash^{{\sf #2}}}}{\mathop{\vdash_{{\sf #1}}^{{\sf #2}}}}}
+\newcommand{\entails}[1][]{\ifthenelse{\equal{#1}{}}{\models}{\models_{\mbox{\sf\scriptsize #1}}}}
+\renewcommand{\implies}{\Longrightarrow}
+\newcommand{\id}{\mathit{id}}
+\newcommand{\Id}{\mathit{Id}}
+\newcommand{\true}{\mathit{true}}
+\newcommand{\false}{\mathit{false}}
+\newcommand{\True}{\mathit{True}}
+\newcommand{\False}{\mathit{False}}
+\newcommand{\univ}{\mathbb{U}}
+\newcommand{\underscore}{{\tt \_}}
+\newcommand{\N}{\reflectbox{$\mathsf{N}$}}
+
+\newcommand{\ang}[1]{\left\langle{#1}\right\rangle}
+\newcommand{\paren}[1]{\left({#1}\right)}
+\newcommand{\sem}[2][]{%
+\ifthenelse{\equal{#1}{}}{%
+{\left\llbracket{#2}\right\rrbracket}%
+}{%
+{\left\llbracket{#2}\right\rrbracket}_{\sf #1}%
+}}
+\newcommand{\roundsem}[1]{{\llparenthesis}\,{#1}\,{\rrparenthesis}}
+\newcommand{\size}[1]{\left|{#1}\right|}
+\newcommand{\iffdef}{\stackrel{{\scriptsize\rm def}}{\Longleftrightarrow}}
+\newcommand{\dotneq}{\mathrel{\dot\neq}}
+
+
+% ARITHMETIC
+\newcommand{\ceil}[1]{\left⎡#1\right⎤}
+\newcommand{\floor}[1]{\left⎣#1\right⎦}
+
+% SEPARATION LOGIC
+\newcommand{\magicwand}{\mathbin{{-\!\!}{*}}}
+\newcommand{\iterstar}[2][]{\circledast^{#1}_{#2}}
+\newcommand{\septract}{\mathbin{{-\!}{\circledast}}}
+\newcommand{\pto}[1][]{\mathbin{\stackrel{\mbox{\scriptsize \smash{$#1$}}}\mapsto}}
+\newcommand{\halfpto}{\pto[.5]}
+\renewcommand{\boxed}[2][]{%
+  \renewcommand{\arraystretch}{0.9}%
+  \mbox{\mdseries\begin{tabular}{|@{\hspace{2px}}L@{\hspace{2px}}|}\hline #2 \\ \hline \end{tabular}}_{#1}%
+}
+\newcommand{\Boxed}[2][]{%
+  \renewcommand{\arraystretch}{1.0}%
+  \mbox{\mdseries\begin{tabular}{|@{\hspace{2px}}L@{\hspace{2px}}|}\hline #2 \\[1.5pt] \hline \end{tabular}}_{#1}%
+}
+\newcommand{\emp}{\mathit{emp}}
+\newcommand{\Emp}{\mathit{Emp}}
+
+% PROGRAMMING LANGUAGE
+\renewcommand{\colon}{\mathbin{\mbox{\rm \textbf{:}}}}
+\newcommand{\bang}{\mathbin{\mbox{\rm \textbf{!}}}}
+\newcommand{\query}{\mathbin{\mbox{\rm \textbf{?}}}}
+%\renewcommand{\parallel}{\mathbin{\mbox{\rm \textsf{ll}}}}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Choose}[2]{{#1}\mathbin{\code{or}}{#2}}
+\newcommand{\Loop}[1]{\mathop{\code{loop}}{#1}}
+\newcommand{\Skip}{\code{skip}}
+\newcommand{\Semicolon}{\mathbin{\code{;}}}
+\newcommand{\assign}{\mathbin{\code{:=}}}
+\newcommand{\assert}{\mathop{\code{assert}}}
+\newcommand{\assume}{\mathop{\code{assume}}}
+\newcommand{\amp}{\code{\&}}

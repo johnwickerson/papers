@@ -1,0 +1,845 @@
+%Starting.
+\pgfdeclarelayer{frontmost}
+\pgfdeclarelayer{colnameslayer}
+\pgfsetlayers{main,frontmost,colnameslayer}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=0.75]
+% State has been set.
+\draw [line width = 0.5mm, white] (32.,0.) -- (32.,-6.);
+\draw [line width = 0.5mm, white] (48.,0.) -- (48.,-6.);
+\fill [black!15] (32.,0.) -- (32.,-6.) -- (48.,-6.) -- (48.,0.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (40.,-5.) node{\smash{$\ml[t]{\List{α_0}{\code x}}$}};
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (50.,-11.) rectangle (81.,-6.);
+\draw [white] (50.,-8.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}y:=nil\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (32.,-6.) -- (32.,-11.);
+\draw [line width = 0.5mm, white] (48.,-6.) -- (48.,-11.);
+\fill [black!15] (32.,-6.) -- (32.,-11.) -- (48.,-11.) -- (48.,-6.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-11.) -- (32.,-17.);
+\draw [line width = 0.5mm, white] (48.,-11.) -- (48.,-17.);
+\fill [black!15] (32.,-11.) -- (32.,-17.) -- (48.,-17.) -- (48.,-11.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-11.) -- (50.,-17.);
+\draw [line width = 0.5mm, white] (81.,-11.) -- (81.,-17.);
+\fill [black!15] (50.,-11.) -- (50.,-17.) -- (81.,-17.) -- (81.,-11.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (65.5,-15.) node{\smash{$\ml[t]{\List{ε}{\code y}}$}};
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (26.,-22.) rectangle (85.,-17.);
+\draw [white] (26.,-19.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Choose $α := α_0$ and $β := ε$\end{tabular}};
+\end{pgfonlayer}
+% Pen up
+% Pen down
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-22.) -- (30.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-22.) -- (82.85,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-22.) -- (26.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-22.) -- (84.85,-22.);
+\begin{pgfonlayer}{frontmost}
+\fill [white] (24.,-23.3) -- (24.,-26.8) -- (27.,-26.8) -- (27.,-23.3) -- cycle;
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [black] (21.,-25.) node[anchor=west,\mygreen]{$∃α$};
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-22.) -- (30.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-22.) -- (82.85,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-22.) -- (26.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-22.) -- (84.85,-22.);
+\begin{pgfonlayer}{frontmost}
+\fill [white] (28.,-28.3) -- (28.,-31.8) -- (31.,-31.8) -- (31.,-28.3) -- cycle;
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [black] (25.,-30.) node[anchor=west,\mypurple]{$∃β$};
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-22.) -- (30.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-22.) -- (82.85,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-22.) -- (26.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-22.) -- (84.85,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-33.) -- (30.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-33.) -- (82.85,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-33.) -- (26.15,-22.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-33.) -- (84.85,-22.);
+\draw [line width = 0.5mm, white] (32.,-22.) -- (32.,-33.);
+\draw [line width = 0.5mm, white] (48.,-22.) -- (48.,-33.);
+\fill [black!15] (32.,-22.) -- (32.,-33.) -- (48.,-33.) -- (48.,-22.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (40.,-26.) node{\smash{$\ml[t]{\List{α}{\code x}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (50.,-22.) -- (50.,-33.);
+\draw [line width = 0.5mm, white] (64.,-22.) -- (64.,-33.);
+\fill [black!15] (50.,-22.) -- (50.,-33.) -- (64.,-33.) -- (64.,-22.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (57.,-26.) node{\smash{$\ml[t]{\List{β}{\code y}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-22.) -- (66.,-33.);
+\draw [line width = 0.5mm, white] (81.,-22.) -- (81.,-33.);
+\fill [black!15] (66.,-22.) -- (66.,-33.) -- (81.,-33.) -- (81.,-22.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (73.5,-26.) node{\smash{$\ml[t]{α_0\doteq {}\\{} \rev{β}·α}$}};
+\end{pgfonlayer}
+\draw [line width = 0.6mm, black] (1.65,-39.) -- (1.65,-38.);
+\draw [line width = 0.6mm, black] (86.35,-39.) -- (86.35,-38.);
+\fill[fill=black, rounded corners=1.5mm] (1.3,-38.) rectangle (86.7,-33.);
+\fill[fill=black] (1.3,-38.) rectangle (86.7,-35.5);
+\draw [white] (1.3,-35.5) node[anchor=west]{\code{while (x!=nil) \{}};
+\draw [line width = 0.5mm, white] (66.,-38.) -- (66.,-44.);
+\draw [line width = 0.5mm, white] (81.,-38.) -- (81.,-44.);
+\fill [black!15] (66.,-38.) -- (66.,-44.) -- (81.,-44.) -- (81.,-38.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-38.) -- (50.,-44.);
+\draw [line width = 0.5mm, white] (64.,-38.) -- (64.,-44.);
+\fill [black!15] (50.,-38.) -- (50.,-44.) -- (64.,-44.) -- (64.,-38.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-38.) -- (32.,-44.);
+\draw [line width = 0.5mm, white] (48.,-38.) -- (48.,-44.);
+\fill [black!15] (32.,-38.) -- (32.,-44.) -- (48.,-44.) -- (48.,-38.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-44.) -- (1.65,-38.);
+\draw [line width = 0.6mm, black] (86.35,-44.) -- (86.35,-38.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-44.) -- (30.15,-38.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-44.) -- (82.85,-38.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-44.) -- (26.15,-38.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-44.) -- (84.85,-38.);
+\draw [line width = 0.5mm, white] (9.,-38.) -- (9.,-44.);
+\draw [line width = 0.5mm, white] (24.,-38.) -- (24.,-44.);
+\fill [black!15] (9.,-38.) -- (9.,-44.) -- (24.,-44.) -- (24.,-38.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (16.5,-43.) node{\smash{$\ml[t]{{\code x}\dotneq {\code{nil}}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (9.,-44.) -- (9.,-46.);
+\draw [line width = 0.5mm, white] (24.,-44.) -- (24.,-46.);
+\fill [black!15] (9.,-44.) -- (9.,-46.) -- (24.,-46.) -- (24.,-44.) -- cycle;
+\draw [line width = 0.5mm, white] (66.,-44.) -- (66.,-46.);
+\draw [line width = 0.5mm, white] (81.,-44.) -- (81.,-46.);
+\fill [black!15] (66.,-44.) -- (66.,-46.) -- (81.,-46.) -- (81.,-44.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-44.) -- (50.,-46.);
+\draw [line width = 0.5mm, white] (64.,-44.) -- (64.,-46.);
+\fill [black!15] (50.,-44.) -- (50.,-46.) -- (64.,-46.) -- (64.,-44.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-44.) -- (32.,-46.);
+\draw [line width = 0.5mm, white] (48.,-44.) -- (48.,-46.);
+\fill [black!15] (32.,-44.) -- (32.,-46.) -- (48.,-46.) -- (48.,-44.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-46.) -- (1.65,-44.);
+\draw [line width = 0.6mm, black] (86.35,-46.) -- (86.35,-44.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-46.) -- (30.15,-44.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-46.) -- (82.85,-44.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-46.) -- (3.15,-45.) -- (26.15,-45.) -- (26.15,-44.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-46.) -- (84.85,-44.);
+\draw [line width = 0.5mm, white] (9.,-46.) -- (9.,-48.);
+\draw [line width = 0.5mm, white] (24.,-46.) -- (24.,-48.);
+\fill [black!15] (9.,-46.) -- (9.,-48.) -- (24.,-48.) -- (24.,-46.) -- cycle;
+\draw [line width = 0.5mm, white] (66.,-46.) -- (66.,-48.);
+\draw [line width = 0.5mm, white] (81.,-46.) -- (81.,-48.);
+\fill [black!15] (66.,-46.) -- (66.,-48.) -- (81.,-48.) -- (81.,-46.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-46.) -- (50.,-48.);
+\draw [line width = 0.5mm, white] (64.,-46.) -- (64.,-48.);
+\fill [black!15] (50.,-46.) -- (50.,-48.) -- (64.,-48.) -- (64.,-46.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-46.) -- (32.,-48.);
+\draw [line width = 0.5mm, white] (48.,-46.) -- (48.,-48.);
+\fill [black!15] (32.,-46.) -- (32.,-48.) -- (48.,-48.) -- (48.,-46.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-48.) -- (1.65,-46.);
+\draw [line width = 0.6mm, black] (86.35,-48.) -- (86.35,-46.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-48.) -- (3.15,-46.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-48.) -- (84.85,-46.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-48.) -- (5.15,-47.) -- (30.15,-47.) -- (30.15,-46.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-48.) -- (82.85,-46.);
+\draw [line width = 0.5mm, white] (66.,-48.) -- (66.,-49.);
+\draw [line width = 0.5mm, white] (81.,-48.) -- (81.,-49.);
+\fill [black!15] (66.,-48.) -- (66.,-49.) -- (81.,-49.) -- (81.,-48.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-48.) -- (50.,-49.);
+\draw [line width = 0.5mm, white] (64.,-48.) -- (64.,-49.);
+\fill [black!15] (50.,-48.) -- (50.,-49.) -- (64.,-49.) -- (64.,-48.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-49.) -- (1.65,-48.);
+\draw [line width = 0.6mm, black] (86.35,-49.) -- (86.35,-48.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-49.) -- (5.15,-48.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-49.) -- (82.85,-48.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-49.) -- (3.15,-48.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-49.) -- (84.85,-48.);
+\draw [line width = 0.5mm, white] (9.,-48.) -- (9.,-49.);
+\draw [line width = 0.5mm, white] (24.,-48.) -- (24.,-49.);
+\fill [black!15] (9.,-48.) -- (9.,-49.) -- (24.,-49.) -- (24.,-48.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-48.) -- (32.,-49.);
+\draw [line width = 0.5mm, white] (48.,-48.) -- (48.,-49.);
+\fill [black!15] (32.,-48.) -- (32.,-49.) -- (48.,-49.) -- (48.,-48.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (9.,-54.) rectangle (48.,-49.);
+\draw [white] (9.,-51.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Unfold $\mathit{list}$ def\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-49.) -- (66.,-54.);
+\draw [line width = 0.5mm, white] (81.,-49.) -- (81.,-54.);
+\fill [black!15] (66.,-49.) -- (66.,-54.) -- (81.,-54.) -- (81.,-49.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-49.) -- (50.,-54.);
+\draw [line width = 0.5mm, white] (64.,-49.) -- (64.,-54.);
+\fill [black!15] (50.,-49.) -- (50.,-54.) -- (64.,-54.) -- (64.,-49.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-54.) -- (1.65,-49.);
+\draw [line width = 0.6mm, black] (86.35,-54.) -- (86.35,-49.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-54.) -- (5.15,-49.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-54.) -- (82.85,-49.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-54.) -- (3.15,-49.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-54.) -- (84.85,-49.);
+% Twisted (h,i,ii,jj) to (i,ii,jj,h).
+\draw [white, line width = 0.5mm, white] (50.,-54.) .. controls (50.,-63.8) and (73.,-58.2) .. (73.,-68.);
+\draw [white, line width = 0.5mm, white] (64.,-54.) .. controls (64.,-63.8) and (79.,-58.2) .. (79.,-68.);
+\fill [black!15] (50.,-54.) .. controls (50.,-63.8) and (73.,-58.2) .. (73.,-68.) -- (79.,-68.) .. controls (79.,-58.2) and (64.,-63.8) .. (64.,-54.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-68.) -- (1.65,-54.);
+\draw [line width = 0.6mm, black] (86.35,-68.) -- (86.35,-54.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-68.) -- (5.15,-54.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-68.) -- (82.85,-54.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-68.) -- (3.15,-54.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-68.) -- (84.85,-54.);
+\draw [white, line width = 0.5mm, white] (9.,-54.) .. controls (9.,-63.8) and (13.,-58.2) .. (13.,-68.);
+\draw [line width = 0.5mm, white] (48.,-54.) -- (48.,-68.);
+\fill [black!15] (9.,-54.) .. controls (9.,-63.8) and (13.,-58.2) .. (13.,-68.) -- (48.,-68.) .. controls (48.,-58.2) and (48.,-63.8) .. (48.,-54.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (28.5,-58.) node{\smash{$\ml[t]{∃α',i,Z．{\code x}↦i,Z {}\\{}~~~ * \List{α'}{Z} {}\\{}~~~ * α\doteq i·α'}$}};
+\end{pgfonlayer}
+\draw [white, line width = 0.5mm, white] (66.,-54.) .. controls (66.,-63.8) and (50.,-58.2) .. (50.,-68.);
+\draw [white, line width = 0.5mm, white] (81.,-54.) .. controls (81.,-63.8) and (67.,-58.2) .. (67.,-68.);
+\fill [black!15] (66.,-54.) .. controls (66.,-63.8) and (50.,-58.2) .. (50.,-68.) -- (67.,-68.) .. controls (67.,-58.2) and (81.,-63.8) .. (81.,-54.) -- cycle;
+\draw [line width = 0.5mm, white] (73.,-68.) -- (73.,-70.);
+\draw [line width = 0.5mm, white] (79.,-68.) -- (79.,-70.);
+\fill [black!15] (73.,-68.) -- (73.,-70.) -- (79.,-70.) -- (79.,-68.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-70.) -- (1.65,-68.);
+\draw [line width = 0.6mm, black] (86.35,-70.) -- (86.35,-68.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-70.) -- (5.15,-68.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-70.) -- (82.85,-68.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (9.15,-70.) -- (9.15,-69.) -- (3.15,-69.) -- (3.15,-68.);
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (70.85,-70.) -- (70.85,-69.) -- (84.85,-69.) -- (84.85,-68.);
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (50.,-68.) -- (50.,-70.);
+\draw [line width = 0.5mm, white] (67.,-68.) -- (67.,-70.);
+\fill [black!15] (50.,-68.) -- (50.,-70.) -- (67.,-70.) -- (67.,-68.) -- cycle;
+\draw [line width = 0.5mm, white] (13.,-68.) -- (13.,-70.);
+\draw [line width = 0.5mm, white] (48.,-68.) -- (48.,-70.);
+\fill [black!15] (13.,-68.) -- (13.,-70.) -- (48.,-70.) -- (48.,-68.) -- cycle;
+% Pen up
+% Pen down
+\draw [line width = 0.5mm, white] (73.,-70.) -- (73.,-70.);
+\draw [line width = 0.5mm, white] (79.,-70.) -- (79.,-70.);
+\fill [black!15] (73.,-70.) -- (73.,-70.) -- (79.,-70.) -- (79.,-70.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-70.) -- (1.65,-70.);
+\draw [line width = 0.6mm, black] (86.35,-70.) -- (86.35,-70.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-70.) -- (5.15,-70.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-70.) -- (82.85,-70.);
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (9.,-75.) rectangle (71.,-70.);
+\draw [white] (9.,-72.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Choose $α := α'$\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (73.,-70.) -- (73.,-75.);
+\draw [line width = 0.5mm, white] (79.,-70.) -- (79.,-75.);
+\fill [black!15] (73.,-70.) -- (73.,-75.) -- (79.,-75.) -- (79.,-70.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-75.) -- (1.65,-70.);
+\draw [line width = 0.6mm, black] (86.35,-75.) -- (86.35,-70.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-75.) -- (5.15,-70.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-75.) -- (82.85,-70.);
+% Pen up
+% Pen down
+\draw [line width = 0.5mm, white] (73.,-75.) -- (73.,-75.);
+\draw [line width = 0.5mm, white] (79.,-75.) -- (79.,-75.);
+\fill [black!15] (73.,-75.) -- (73.,-75.) -- (79.,-75.) -- (79.,-75.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-75.) -- (1.65,-75.);
+\draw [line width = 0.6mm, black] (86.35,-75.) -- (86.35,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-75.) -- (11.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (68.85,-75.) -- (68.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (9.15,-75.) -- (9.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (70.85,-75.) -- (70.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-75.) -- (5.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-75.) -- (82.85,-75.);
+\begin{pgfonlayer}{frontmost}
+\fill [white] (7.,-76.3) -- (7.,-79.8) -- (10.,-79.8) -- (10.,-76.3) -- cycle;
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [black] (4.,-78.) node[anchor=west,\mygreen]{$∃α$};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (73.,-75.) -- (73.,-75.);
+\draw [line width = 0.5mm, white] (79.,-75.) -- (79.,-75.);
+\fill [black!15] (73.,-75.) -- (73.,-75.) -- (79.,-75.) -- (79.,-75.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-75.) -- (1.65,-75.);
+\draw [line width = 0.6mm, black] (86.35,-75.) -- (86.35,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-75.) -- (11.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (68.85,-75.) -- (68.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (9.15,-75.) -- (9.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (70.85,-75.) -- (70.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-75.) -- (5.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-75.) -- (82.85,-75.);
+\begin{pgfonlayer}{frontmost}
+\fill [white] (10.,-83.3) -- (10.,-86.8) -- (13.,-86.8) -- (13.,-83.3) -- cycle;
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [black] (7.,-85.) node[anchor=west,\mybrown]{$∃i$};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (73.,-75.) -- (73.,-75.);
+\draw [line width = 0.5mm, white] (79.,-75.) -- (79.,-75.);
+\fill [black!15] (73.,-75.) -- (73.,-75.) -- (79.,-75.) -- (79.,-75.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-75.) -- (1.65,-75.);
+\draw [line width = 0.6mm, black] (86.35,-75.) -- (86.35,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-75.) -- (11.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (68.85,-75.) -- (68.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (9.15,-75.) -- (9.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (70.85,-75.) -- (70.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-75.) -- (5.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-75.) -- (82.85,-75.);
+\draw [line width = 0.5mm, white] (73.,-75.) -- (73.,-81.);
+\draw [line width = 0.5mm, white] (79.,-75.) -- (79.,-81.);
+\fill [black!15] (73.,-75.) -- (73.,-81.) -- (79.,-81.) -- (79.,-75.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-81.) -- (1.65,-75.);
+\draw [line width = 0.6mm, black] (86.35,-81.) -- (86.35,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-81.) -- (11.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (68.85,-81.) -- (68.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (9.15,-81.) -- (9.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (70.85,-81.) -- (70.85,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-81.) -- (5.15,-75.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-81.) -- (82.85,-75.);
+\draw [line width = 0.5mm, white] (13.,-75.) -- (13.,-81.);
+\draw [line width = 0.5mm, white] (48.,-75.) -- (48.,-81.);
+\fill [black!15] (13.,-75.) -- (13.,-81.) -- (48.,-81.) -- (48.,-75.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (30.5,-79.) node{\smash{$\ml[t]{∃Z．{\code x}↦i,Z {}\\{} * \List{α}{Z}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (50.,-75.) -- (50.,-81.);
+\draw [line width = 0.5mm, white] (67.,-75.) -- (67.,-81.);
+\fill [black!15] (50.,-75.) -- (50.,-81.) -- (67.,-81.) -- (67.,-75.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (58.5,-79.) node{\smash{$\ml[t]{α_0\doteq \rev{β}{}\\{}· (i·α)}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (50.,-81.) -- (50.,-83.);
+\draw [line width = 0.5mm, white] (67.,-81.) -- (67.,-83.);
+\fill [black!15] (50.,-81.) -- (50.,-83.) -- (67.,-83.) -- (67.,-81.) -- cycle;
+\draw [line width = 0.5mm, white] (13.,-81.) -- (13.,-83.);
+\draw [line width = 0.5mm, white] (48.,-81.) -- (48.,-83.);
+\fill [black!15] (13.,-81.) -- (13.,-83.) -- (48.,-83.) -- (48.,-81.) -- cycle;
+\draw [line width = 0.5mm, white] (73.,-81.) -- (73.,-83.);
+\draw [line width = 0.5mm, white] (79.,-81.) -- (79.,-83.);
+\fill [black!15] (73.,-81.) -- (73.,-83.) -- (79.,-83.) -- (79.,-81.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-83.) -- (1.65,-81.);
+\draw [line width = 0.6mm, black] (86.35,-83.) -- (86.35,-81.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-83.) -- (11.15,-81.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (68.85,-83.) -- (68.85,-81.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-83.) -- (3.15,-82.) -- (9.15,-82.) -- (9.15,-81.);
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-83.) -- (84.85,-82.) -- (70.85,-82.) -- (70.85,-81.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-83.) -- (5.15,-81.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-83.) -- (82.85,-81.);
+\draw [line width = 0.5mm, white] (50.,-83.) -- (50.,-85.);
+\draw [line width = 0.5mm, white] (67.,-83.) -- (67.,-85.);
+\fill [black!15] (50.,-83.) -- (50.,-85.) -- (67.,-85.) -- (67.,-83.) -- cycle;
+\draw [line width = 0.5mm, white] (13.,-83.) -- (13.,-85.);
+\draw [line width = 0.5mm, white] (48.,-83.) -- (48.,-85.);
+\fill [black!15] (13.,-83.) -- (13.,-85.) -- (48.,-85.) -- (48.,-83.) -- cycle;
+\draw [line width = 0.5mm, white] (73.,-83.) -- (73.,-85.);
+\draw [line width = 0.5mm, white] (79.,-83.) -- (79.,-85.);
+\fill [black!15] (73.,-83.) -- (73.,-85.) -- (79.,-85.) -- (79.,-83.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-85.) -- (1.65,-83.);
+\draw [line width = 0.6mm, black] (86.35,-85.) -- (86.35,-83.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-85.) -- (3.15,-83.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-85.) -- (84.85,-83.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-85.) -- (11.15,-83.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-85.) -- (80.85,-84.) -- (68.85,-84.) -- (68.85,-83.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-85.) -- (5.15,-83.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-85.) -- (82.85,-83.);
+\draw [line width = 0.5mm, white] (50.,-85.) -- (50.,-86.);
+\draw [line width = 0.5mm, white] (67.,-85.) -- (67.,-86.);
+\fill [black!15] (50.,-85.) -- (50.,-86.) -- (67.,-86.) -- (67.,-85.) -- cycle;
+\draw [line width = 0.5mm, white] (73.,-85.) -- (73.,-86.);
+\draw [line width = 0.5mm, white] (79.,-85.) -- (79.,-86.);
+\fill [black!15] (73.,-85.) -- (73.,-86.) -- (79.,-86.) -- (79.,-85.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-86.) -- (1.65,-85.);
+\draw [line width = 0.6mm, black] (86.35,-86.) -- (86.35,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-86.) -- (11.15,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-86.) -- (80.85,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-86.) -- (3.15,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-86.) -- (84.85,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-86.) -- (5.15,-85.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-86.) -- (82.85,-85.);
+\draw [line width = 0.5mm, white] (13.,-85.) -- (13.,-86.);
+\draw [line width = 0.5mm, white] (48.,-85.) -- (48.,-86.);
+\fill [black!15] (13.,-85.) -- (13.,-86.) -- (48.,-86.) -- (48.,-85.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (13.,-91.) rectangle (48.,-86.);
+\draw [white] (13.,-88.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}z:=[x+1]\end{tabular}}};
+\end{pgfonlayer}
+% Twisted (i,ii,jj,h) to (ii,jj,h,i).
+\draw [white, line width = 0.5mm, white] (73.,-86.) .. controls (73.,-89.5) and (54.,-87.5) .. (54.,-91.);
+\draw [white, line width = 0.5mm, white] (79.,-86.) .. controls (79.,-89.5) and (60.,-87.5) .. (60.,-91.);
+\fill [black!15] (73.,-86.) .. controls (73.,-89.5) and (54.,-87.5) .. (54.,-91.) -- (60.,-91.) .. controls (60.,-87.5) and (79.,-89.5) .. (79.,-86.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-91.) -- (1.65,-86.);
+\draw [line width = 0.6mm, black] (86.35,-91.) -- (86.35,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-91.) -- (11.15,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-91.) -- (80.85,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-91.) -- (3.15,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-91.) -- (84.85,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-91.) -- (5.15,-86.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-91.) -- (82.85,-86.);
+\draw [white, line width = 0.5mm, white] (50.,-86.) .. controls (50.,-89.5) and (62.,-87.5) .. (62.,-91.);
+\draw [white, line width = 0.5mm, white] (67.,-86.) .. controls (67.,-89.5) and (79.,-87.5) .. (79.,-91.);
+\fill [black!15] (50.,-86.) .. controls (50.,-89.5) and (62.,-87.5) .. (62.,-91.) -- (79.,-91.) .. controls (79.,-87.5) and (67.,-89.5) .. (67.,-86.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (62.,-101.) rectangle (79.,-91.);
+\draw [white] (62.,-96.) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Reassoc-\\iate $i$\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (54.,-91.) -- (54.,-101.);
+\draw [line width = 0.5mm, white] (60.,-91.) -- (60.,-101.);
+\fill [black!15] (54.,-91.) -- (54.,-101.) -- (60.,-101.) -- (60.,-91.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-101.) -- (1.65,-91.);
+\draw [line width = 0.6mm, black] (86.35,-101.) -- (86.35,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-101.) -- (11.15,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-101.) -- (80.85,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-101.) -- (3.15,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-101.) -- (84.85,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-101.) -- (5.15,-91.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-101.) -- (82.85,-91.);
+\draw [line width = 0.5mm, white] (13.,-91.) -- (13.,-101.);
+\draw [line width = 0.5mm, white] (30.,-91.) -- (30.,-101.);
+\fill [black!15] (13.,-91.) -- (13.,-101.) -- (30.,-101.) -- (30.,-91.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (21.5,-95.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (32.,-91.) -- (32.,-101.);
+\draw [white, line width = 0.5mm, white] (48.,-91.) .. controls (48.,-98.) and (52.,-94.) .. (52.,-101.);
+\fill [black!15] (32.,-91.) .. controls (32.,-98.) and (32.,-94.) .. (32.,-101.) -- (52.,-101.) .. controls (52.,-94.) and (48.,-98.) .. (48.,-91.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (40.,-95.) node{\smash{$\ml[t]{{\code x}↦i,{\code z}}$}};
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (32.,-106.) rectangle (52.,-101.);
+\draw [white] (32.,-103.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}[x+1]:=y\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (13.,-101.) -- (13.,-106.);
+\draw [line width = 0.5mm, white] (30.,-101.) -- (30.,-106.);
+\fill [black!15] (13.,-101.) -- (13.,-106.) -- (30.,-106.) -- (30.,-101.) -- cycle;
+\draw [line width = 0.5mm, white] (54.,-101.) -- (54.,-106.);
+\draw [line width = 0.5mm, white] (60.,-101.) -- (60.,-106.);
+\fill [black!15] (54.,-101.) -- (54.,-106.) -- (60.,-106.) -- (60.,-101.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-106.) -- (1.65,-101.);
+\draw [line width = 0.6mm, black] (86.35,-106.) -- (86.35,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-106.) -- (11.15,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-106.) -- (80.85,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-106.) -- (3.15,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-106.) -- (84.85,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-106.) -- (5.15,-101.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-106.) -- (82.85,-101.);
+\draw [line width = 0.5mm, white] (32.,-101.) -- (32.,-106.);
+\draw [line width = 0.5mm, white] (52.,-101.) -- (52.,-106.);
+\fill [black!15] (32.,-101.) -- (32.,-106.) -- (52.,-106.) -- (52.,-101.) -- cycle;
+\draw [line width = 0.5mm, white] (62.,-101.) -- (62.,-106.);
+\draw [line width = 0.5mm, white] (79.,-101.) -- (79.,-106.);
+\fill [black!15] (62.,-101.) -- (62.,-106.) -- (79.,-106.) -- (79.,-101.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (70.5,-106.) node{\smash{$\ml[t]{α_0\doteq {}\\{} \rev{(i\!·\!β)}\!·\!α}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (13.,-106.) -- (13.,-112.);
+\draw [line width = 0.5mm, white] (30.,-106.) -- (30.,-112.);
+\fill [black!15] (13.,-106.) -- (13.,-112.) -- (30.,-112.) -- (30.,-106.) -- cycle;
+\draw [line width = 0.5mm, white] (62.,-106.) -- (62.,-112.);
+\draw [line width = 0.5mm, white] (79.,-106.) -- (79.,-112.);
+\fill [black!15] (62.,-106.) -- (62.,-112.) -- (79.,-112.) -- (79.,-106.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-112.) -- (1.65,-106.);
+\draw [line width = 0.6mm, black] (86.35,-112.) -- (86.35,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-112.) -- (11.15,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-112.) -- (80.85,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-112.) -- (3.15,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-112.) -- (84.85,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-112.) -- (5.15,-106.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-112.) -- (82.85,-106.);
+\draw [white, line width = 0.5mm, white] (32.,-106.) .. controls (32.,-110.2) and (36.,-107.8) .. (36.,-112.);
+\draw [line width = 0.5mm, white] (52.,-106.) -- (52.,-112.);
+\fill [black!15] (32.,-106.) .. controls (32.,-110.2) and (36.,-107.8) .. (36.,-112.) -- (52.,-112.) .. controls (52.,-107.8) and (52.,-110.2) .. (52.,-106.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (42.,-110.) node{\smash{$\ml[t]{~~{\code x}↦i,{\code y}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (54.,-106.) -- (54.,-112.);
+\draw [line width = 0.5mm, white] (60.,-106.) -- (60.,-112.);
+\fill [black!15] (54.,-106.) -- (54.,-112.) -- (60.,-112.) -- (60.,-106.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (36.,-117.) rectangle (60.,-112.);
+\draw [white] (36.,-114.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Fold $\mathit{list}$ def\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (13.,-112.) -- (13.,-117.);
+\draw [line width = 0.5mm, white] (30.,-112.) -- (30.,-117.);
+\fill [black!15] (13.,-112.) -- (13.,-117.) -- (30.,-117.) -- (30.,-112.) -- cycle;
+\draw [line width = 0.5mm, white] (62.,-112.) -- (62.,-117.);
+\draw [line width = 0.5mm, white] (79.,-112.) -- (79.,-117.);
+\fill [black!15] (62.,-112.) -- (62.,-117.) -- (79.,-117.) -- (79.,-112.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-117.) -- (1.65,-112.);
+\draw [line width = 0.6mm, black] (86.35,-117.) -- (86.35,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-117.) -- (11.15,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-117.) -- (80.85,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-117.) -- (3.15,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-117.) -- (84.85,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-117.) -- (5.15,-112.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-117.) -- (82.85,-112.);
+\draw [line width = 0.5mm, white] (13.,-117.) -- (13.,-119.);
+\draw [line width = 0.5mm, white] (30.,-117.) -- (30.,-119.);
+\fill [black!15] (13.,-117.) -- (13.,-119.) -- (30.,-119.) -- (30.,-117.) -- cycle;
+\draw [line width = 0.5mm, white] (62.,-117.) -- (62.,-119.);
+\draw [line width = 0.5mm, white] (79.,-117.) -- (79.,-119.);
+\fill [black!15] (62.,-117.) -- (62.,-119.) -- (79.,-119.) -- (79.,-117.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-119.) -- (1.65,-117.);
+\draw [line width = 0.6mm, black] (86.35,-119.) -- (86.35,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (11.15,-119.) -- (11.15,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-119.) -- (80.85,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-119.) -- (3.15,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-119.) -- (84.85,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-119.) -- (5.15,-117.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-119.) -- (82.85,-117.);
+\draw [line width = 0.5mm, white] (36.,-117.) -- (36.,-119.);
+\draw [line width = 0.5mm, white] (60.,-117.) -- (60.,-119.);
+\fill [black!15] (36.,-117.) -- (36.,-119.) -- (60.,-119.) -- (60.,-117.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (48.,-121.) node{\smash{$\ml[t]{\List{(i·β)}{\code x}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (36.,-119.) -- (36.,-121.);
+\draw [line width = 0.5mm, white] (60.,-119.) -- (60.,-121.);
+\fill [black!15] (36.,-119.) -- (36.,-121.) -- (60.,-121.) -- (60.,-119.) -- cycle;
+\draw [line width = 0.5mm, white] (13.,-119.) -- (13.,-121.);
+\draw [line width = 0.5mm, white] (30.,-119.) -- (30.,-121.);
+\fill [black!15] (13.,-119.) -- (13.,-121.) -- (30.,-121.) -- (30.,-119.) -- cycle;
+\draw [line width = 0.5mm, white] (62.,-119.) -- (62.,-121.);
+\draw [line width = 0.5mm, white] (79.,-119.) -- (79.,-121.);
+\fill [black!15] (62.,-119.) -- (62.,-121.) -- (79.,-121.) -- (79.,-119.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-121.) -- (1.65,-119.);
+\draw [line width = 0.6mm, black] (86.35,-121.) -- (86.35,-119.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (34.15,-121.) -- (34.15,-120.) -- (11.15,-120.) -- (11.15,-119.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-121.) -- (80.85,-119.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-121.) -- (3.15,-119.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-121.) -- (84.85,-119.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-121.) -- (5.15,-119.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-121.) -- (82.85,-119.);
+\draw [line width = 0.5mm, white] (13.,-121.) -- (13.,-123.);
+\draw [line width = 0.5mm, white] (30.,-121.) -- (30.,-123.);
+\fill [black!15] (13.,-121.) -- (13.,-123.) -- (30.,-123.) -- (30.,-121.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-123.) -- (1.65,-121.);
+\draw [line width = 0.6mm, black] (86.35,-123.) -- (86.35,-121.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (34.15,-123.) -- (34.15,-121.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (80.85,-123.) -- (80.85,-121.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-123.) -- (3.15,-121.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-123.) -- (84.85,-121.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (32.15,-123.) -- (32.15,-122.) -- (5.15,-122.) -- (5.15,-121.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-123.) -- (82.85,-121.);
+\draw [line width = 0.5mm, white] (62.,-121.) -- (62.,-123.);
+\draw [line width = 0.5mm, white] (79.,-121.) -- (79.,-123.);
+\fill [black!15] (62.,-121.) -- (62.,-123.) -- (79.,-123.) -- (79.,-121.) -- cycle;
+\draw [line width = 0.5mm, white] (36.,-121.) -- (36.,-123.);
+\draw [line width = 0.5mm, white] (60.,-121.) -- (60.,-123.);
+\fill [black!15] (36.,-121.) -- (36.,-123.) -- (60.,-123.) -- (60.,-121.) -- cycle;
+% Pen up
+% Pen down
+\draw [line width = 0.5mm, white] (13.,-123.) -- (13.,-123.);
+\draw [line width = 0.5mm, white] (30.,-123.) -- (30.,-123.);
+\fill [black!15] (13.,-123.) -- (13.,-123.) -- (30.,-123.) -- (30.,-123.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-123.) -- (1.65,-123.);
+\draw [line width = 0.6mm, black] (86.35,-123.) -- (86.35,-123.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-123.) -- (3.15,-123.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-123.) -- (84.85,-123.);
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (32.,-128.) rectangle (83.,-123.);
+\draw [white] (32.,-125.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Choose $β := (i·β)$\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (13.,-123.) -- (13.,-128.);
+\draw [line width = 0.5mm, white] (30.,-123.) -- (30.,-128.);
+\fill [black!15] (13.,-123.) -- (13.,-128.) -- (30.,-128.) -- (30.,-123.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-128.) -- (1.65,-123.);
+\draw [line width = 0.6mm, black] (86.35,-128.) -- (86.35,-123.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-128.) -- (3.15,-123.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-128.) -- (84.85,-123.);
+% Pen up
+% Pen down
+\draw [line width = 0.5mm, white] (13.,-128.) -- (13.,-128.);
+\draw [line width = 0.5mm, white] (30.,-128.) -- (30.,-128.);
+\fill [black!15] (13.,-128.) -- (13.,-128.) -- (30.,-128.) -- (30.,-128.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-128.) -- (1.65,-128.);
+\draw [line width = 0.6mm, black] (86.35,-128.) -- (86.35,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (32.15,-128.) -- (32.15,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-128.) -- (82.85,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-128.) -- (3.15,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-128.) -- (84.85,-128.);
+\draw [line width = 0.5mm, white] (13.,-128.) -- (13.,-130.);
+\draw [line width = 0.5mm, white] (30.,-128.) -- (30.,-130.);
+\fill [black!15] (13.,-128.) -- (13.,-130.) -- (30.,-130.) -- (30.,-128.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-130.) -- (1.65,-128.);
+\draw [line width = 0.6mm, black] (86.35,-130.) -- (86.35,-128.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (11.15,-130.) -- (11.15,-129.) -- (32.15,-129.) -- (32.15,-128.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-130.) -- (82.85,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-130.) -- (3.15,-128.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-130.) -- (84.85,-128.);
+\draw [line width = 0.5mm, white] (36.,-128.) -- (36.,-130.);
+\draw [line width = 0.5mm, white] (60.,-128.) -- (60.,-130.);
+\fill [black!15] (36.,-128.) -- (36.,-130.) -- (60.,-130.) -- (60.,-128.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (48.,-132.) node{\smash{$\ml[t]{\List{β}{\code x}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (62.,-128.) -- (62.,-130.);
+\draw [line width = 0.5mm, white] (79.,-128.) -- (79.,-130.);
+\fill [black!15] (62.,-128.) -- (62.,-130.) -- (79.,-130.) -- (79.,-128.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (70.5,-132.) node{\smash{$\ml[t]{~~α_0\doteq {}\\{}~~~~ \rev{β}·α}$}};
+\end{pgfonlayer}
+% Twisted (ii,jj,h,i) to (h,i,ii,jj).
+\draw [line width = 0.6mm, black] (1.65,-140.) -- (1.65,-130.);
+\draw [line width = 0.6mm, black] (86.35,-140.) -- (86.35,-130.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (11.15,-140.) -- (11.15,-130.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-140.) -- (82.85,-130.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-140.) -- (3.15,-130.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-140.) -- (84.85,-130.);
+\draw [white, line width = 0.5mm, white] (13.,-130.) .. controls (13.,-137.) and (32.,-133.) .. (32.,-140.);
+\draw [white, line width = 0.5mm, white] (30.,-130.) .. controls (30.,-137.) and (48.,-133.) .. (48.,-140.);
+\fill [black!15] (13.,-130.) .. controls (13.,-137.) and (32.,-133.) .. (32.,-140.) -- (48.,-140.) .. controls (48.,-133.) and (30.,-137.) .. (30.,-130.) -- cycle;
+\draw [white, line width = 0.5mm, white] (36.,-130.) .. controls (36.,-137.) and (50.,-133.) .. (50.,-140.);
+\draw [white, line width = 0.5mm, white] (60.,-130.) .. controls (60.,-137.) and (64.,-133.) .. (64.,-140.);
+\fill [black!15] (36.,-130.) .. controls (36.,-137.) and (50.,-133.) .. (50.,-140.) -- (64.,-140.) .. controls (64.,-133.) and (60.,-137.) .. (60.,-130.) -- cycle;
+\draw [white, line width = 0.5mm, white] (62.,-130.) .. controls (62.,-137.) and (66.,-133.) .. (66.,-140.);
+\draw [white, line width = 0.5mm, white] (79.,-130.) .. controls (79.,-137.) and (81.,-133.) .. (81.,-140.);
+\fill [black!15] (62.,-130.) .. controls (62.,-137.) and (66.,-133.) .. (66.,-140.) -- (81.,-140.) .. controls (81.,-133.) and (79.,-137.) .. (79.,-130.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill [white] (9.,-133.3) -- (9.,-136.8) -- (12.,-136.8) -- (12.,-133.3) -- cycle;
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\draw [black] (6.,-135.) node[anchor=west,\mypurple]{$∃β$};
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (50.,-145.) rectangle (64.,-140.);
+\draw [white] (50.,-142.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}y:=x\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-140.) -- (66.,-145.);
+\draw [line width = 0.5mm, white] (81.,-140.) -- (81.,-145.);
+\fill [black!15] (66.,-140.) -- (66.,-145.) -- (81.,-145.) -- (81.,-140.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-145.) -- (1.65,-140.);
+\draw [line width = 0.6mm, black] (86.35,-145.) -- (86.35,-140.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (11.15,-145.) -- (11.15,-140.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-145.) -- (82.85,-140.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-145.) -- (3.15,-140.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-145.) -- (84.85,-140.);
+\draw [line width = 0.5mm, white] (32.,-140.) -- (32.,-145.);
+\draw [line width = 0.5mm, white] (48.,-140.) -- (48.,-145.);
+\fill [black!15] (32.,-140.) -- (32.,-145.) -- (48.,-145.) -- (48.,-140.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (32.,-150.) rectangle (48.,-145.);
+\draw [white] (32.,-147.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}x:=z\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-145.) -- (66.,-150.);
+\draw [line width = 0.5mm, white] (81.,-145.) -- (81.,-150.);
+\fill [black!15] (66.,-145.) -- (66.,-150.) -- (81.,-150.) -- (81.,-145.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-150.) -- (1.65,-145.);
+\draw [line width = 0.6mm, black] (86.35,-150.) -- (86.35,-145.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (11.15,-150.) -- (11.15,-145.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-150.) -- (82.85,-145.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-150.) -- (3.15,-145.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-150.) -- (84.85,-145.);
+\draw [line width = 0.5mm, white] (50.,-145.) -- (50.,-150.);
+\draw [line width = 0.5mm, white] (64.,-145.) -- (64.,-150.);
+\fill [black!15] (50.,-145.) -- (50.,-150.) -- (64.,-150.) -- (64.,-145.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (57.,-149.) node{\smash{$\ml[t]{\List{β}{\code y}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-150.) -- (66.,-152.);
+\draw [line width = 0.5mm, white] (81.,-150.) -- (81.,-152.);
+\fill [black!15] (66.,-150.) -- (66.,-152.) -- (81.,-152.) -- (81.,-150.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-150.) -- (50.,-152.);
+\draw [line width = 0.5mm, white] (64.,-150.) -- (64.,-152.);
+\fill [black!15] (50.,-150.) -- (50.,-152.) -- (64.,-152.) -- (64.,-150.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-152.) -- (1.65,-150.);
+\draw [line width = 0.6mm, black] (86.35,-152.) -- (86.35,-150.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (11.15,-152.) -- (11.15,-150.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-152.) -- (82.85,-150.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-152.) -- (3.15,-150.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-152.) -- (84.85,-150.);
+\draw [line width = 0.5mm, white] (32.,-150.) -- (32.,-152.);
+\draw [line width = 0.5mm, white] (48.,-150.) -- (48.,-152.);
+\fill [black!15] (32.,-150.) -- (32.,-152.) -- (48.,-152.) -- (48.,-150.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (40.,-154.) node{\smash{$\ml[t]{\List{α}{\code x}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-152.) -- (66.,-154.);
+\draw [line width = 0.5mm, white] (81.,-152.) -- (81.,-154.);
+\fill [black!15] (66.,-152.) -- (66.,-154.) -- (81.,-154.) -- (81.,-152.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-152.) -- (50.,-154.);
+\draw [line width = 0.5mm, white] (64.,-152.) -- (64.,-154.);
+\fill [black!15] (50.,-152.) -- (50.,-154.) -- (64.,-154.) -- (64.,-152.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-152.) -- (32.,-154.);
+\draw [line width = 0.5mm, white] (48.,-152.) -- (48.,-154.);
+\fill [black!15] (32.,-152.) -- (32.,-154.) -- (48.,-154.) -- (48.,-152.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-154.) -- (1.65,-152.);
+\draw [line width = 0.6mm, black] (86.35,-154.) -- (86.35,-152.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-154.) -- (30.15,-153.) -- (11.15,-153.) -- (11.15,-152.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-154.) -- (82.85,-152.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-154.) -- (3.15,-152.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-154.) -- (84.85,-152.);
+\draw [line width = 0.5mm, white] (66.,-154.) -- (66.,-156.);
+\draw [line width = 0.5mm, white] (81.,-154.) -- (81.,-156.);
+\fill [black!15] (66.,-154.) -- (66.,-156.) -- (81.,-156.) -- (81.,-154.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-154.) -- (50.,-156.);
+\draw [line width = 0.5mm, white] (64.,-154.) -- (64.,-156.);
+\fill [black!15] (50.,-154.) -- (50.,-156.) -- (64.,-156.) -- (64.,-154.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-154.) -- (32.,-156.);
+\draw [line width = 0.5mm, white] (48.,-154.) -- (48.,-156.);
+\fill [black!15] (32.,-154.) -- (32.,-156.) -- (48.,-156.) -- (48.,-154.) -- cycle;
+\draw [line width = 0.6mm, black] (1.65,-156.) -- (1.65,-154.);
+\draw [line width = 0.6mm, black] (86.35,-156.) -- (86.35,-154.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-156.) -- (30.15,-154.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-156.) -- (82.85,-154.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-156.) -- (26.15,-155.) -- (3.15,-155.) -- (3.15,-154.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-156.) -- (84.85,-154.);
+\draw [line width = 0.6mm, black] (1.65,-156.) -- (1.65,-155.);
+\draw [line width = 0.6mm, black] (86.35,-156.) -- (86.35,-155.);
+\fill[fill=black, rounded corners=1.5mm] (1.3,-161.) rectangle (86.7,-156.);
+\fill[fill=black] (1.3,-158.5) rectangle (86.7,-156.);
+\draw [white] (1.3,-158.5) node[anchor=west]{\code{\}}};
+\draw [line width = 0.5mm, white] (66.,-161.) -- (66.,-167.);
+\draw [line width = 0.5mm, white] (81.,-161.) -- (81.,-167.);
+\fill [black!15] (66.,-161.) -- (66.,-167.) -- (81.,-167.) -- (81.,-161.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-161.) -- (50.,-167.);
+\draw [line width = 0.5mm, white] (64.,-161.) -- (64.,-167.);
+\fill [black!15] (50.,-161.) -- (50.,-167.) -- (64.,-167.) -- (64.,-161.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-161.) -- (32.,-167.);
+\draw [line width = 0.5mm, white] (48.,-161.) -- (48.,-167.);
+\fill [black!15] (32.,-161.) -- (32.,-167.) -- (48.,-167.) -- (48.,-161.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (26.15,-167.) -- (26.15,-161.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-167.) -- (84.85,-161.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-167.) -- (30.15,-161.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-167.) -- (82.85,-161.);
+\draw [line width = 0.5mm, white] (9.,-161.) -- (9.,-167.);
+\draw [line width = 0.5mm, white] (24.,-161.) -- (24.,-167.);
+\fill [black!15] (9.,-161.) -- (9.,-167.) -- (24.,-167.) -- (24.,-161.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (16.5,-165.) node{\smash{$\ml[t]{{\code x}\doteq {\code{nil}}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (9.,-167.) -- (9.,-169.);
+\draw [line width = 0.5mm, white] (24.,-167.) -- (24.,-169.);
+\fill [black!15] (9.,-167.) -- (9.,-169.) -- (24.,-169.) -- (24.,-167.) -- cycle;
+\draw [line width = 0.5mm, white] (66.,-167.) -- (66.,-169.);
+\draw [line width = 0.5mm, white] (81.,-167.) -- (81.,-169.);
+\fill [black!15] (66.,-167.) -- (66.,-169.) -- (81.,-169.) -- (81.,-167.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-167.) -- (50.,-169.);
+\draw [line width = 0.5mm, white] (64.,-167.) -- (64.,-169.);
+\fill [black!15] (50.,-167.) -- (50.,-169.) -- (64.,-169.) -- (64.,-167.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-167.) -- (32.,-169.);
+\draw [line width = 0.5mm, white] (48.,-167.) -- (48.,-169.);
+\fill [black!15] (32.,-167.) -- (32.,-169.) -- (48.,-169.) -- (48.,-167.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-169.) -- (3.15,-168.) -- (26.15,-168.) -- (26.15,-167.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-169.) -- (84.85,-167.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (30.15,-169.) -- (30.15,-167.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-169.) -- (82.85,-167.);
+\draw [line width = 0.5mm, white] (9.,-169.) -- (9.,-171.);
+\draw [line width = 0.5mm, white] (24.,-169.) -- (24.,-171.);
+\fill [black!15] (9.,-169.) -- (9.,-171.) -- (24.,-171.) -- (24.,-169.) -- cycle;
+\draw [line width = 0.5mm, white] (66.,-169.) -- (66.,-171.);
+\draw [line width = 0.5mm, white] (81.,-169.) -- (81.,-171.);
+\fill [black!15] (66.,-169.) -- (66.,-171.) -- (81.,-171.) -- (81.,-169.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-169.) -- (50.,-171.);
+\draw [line width = 0.5mm, white] (64.,-169.) -- (64.,-171.);
+\fill [black!15] (50.,-169.) -- (50.,-171.) -- (64.,-171.) -- (64.,-169.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-169.) -- (32.,-171.);
+\draw [line width = 0.5mm, white] (48.,-169.) -- (48.,-171.);
+\fill [black!15] (32.,-169.) -- (32.,-171.) -- (48.,-171.) -- (48.,-169.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-171.) -- (3.15,-169.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-171.) -- (84.85,-169.);
+\begin{pgfonlayer}{frontmost}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-171.) -- (5.15,-170.) -- (30.15,-170.) -- (30.15,-169.);
+\end{pgfonlayer}
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-171.) -- (82.85,-169.);
+\draw [line width = 0.5mm, white] (66.,-171.) -- (66.,-173.);
+\draw [line width = 0.5mm, white] (81.,-171.) -- (81.,-173.);
+\fill [black!15] (66.,-171.) -- (66.,-173.) -- (81.,-173.) -- (81.,-171.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-171.) -- (50.,-173.);
+\draw [line width = 0.5mm, white] (64.,-171.) -- (64.,-173.);
+\fill [black!15] (50.,-171.) -- (50.,-173.) -- (64.,-173.) -- (64.,-171.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-173.) -- (5.15,-171.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-173.) -- (82.85,-171.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-173.) -- (3.15,-171.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-173.) -- (84.85,-171.);
+\draw [line width = 0.5mm, white] (9.,-171.) -- (9.,-173.);
+\draw [line width = 0.5mm, white] (24.,-171.) -- (24.,-173.);
+\fill [black!15] (9.,-171.) -- (9.,-173.) -- (24.,-173.) -- (24.,-171.) -- cycle;
+\draw [line width = 0.5mm, white] (32.,-171.) -- (32.,-173.);
+\draw [line width = 0.5mm, white] (48.,-171.) -- (48.,-173.);
+\fill [black!15] (32.,-171.) -- (32.,-173.) -- (48.,-173.) -- (48.,-171.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (9.,-178.) rectangle (48.,-173.);
+\draw [white] (9.,-175.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Unfold $\mathit{list}$ def\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (66.,-173.) -- (66.,-178.);
+\draw [line width = 0.5mm, white] (81.,-173.) -- (81.,-178.);
+\fill [black!15] (66.,-173.) -- (66.,-178.) -- (81.,-178.) -- (81.,-173.) -- cycle;
+\draw [line width = 0.5mm, white] (50.,-173.) -- (50.,-178.);
+\draw [line width = 0.5mm, white] (64.,-173.) -- (64.,-178.);
+\fill [black!15] (50.,-173.) -- (50.,-178.) -- (64.,-178.) -- (64.,-173.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-178.) -- (5.15,-173.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-178.) -- (82.85,-173.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-178.) -- (3.15,-173.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-178.) -- (84.85,-173.);
+% Twisted (h,i,ii,jj,j) to (i,ii,jj,j,h).
+\draw [white, line width = 0.5mm, white] (50.,-178.) .. controls (50.,-183.6) and (73.,-180.4) .. (73.,-186.);
+\draw [white, line width = 0.5mm, white] (64.,-178.) .. controls (64.,-183.6) and (81.,-180.4) .. (81.,-186.);
+\fill [black!15] (50.,-178.) .. controls (50.,-183.6) and (73.,-180.4) .. (73.,-186.) -- (81.,-186.) .. controls (81.,-180.4) and (64.,-183.6) .. (64.,-178.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-186.) -- (5.15,-178.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-186.) -- (82.85,-178.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-186.) -- (3.15,-178.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-186.) -- (84.85,-178.);
+\draw [line width = 0.5mm, white] (9.,-178.) -- (9.,-186.);
+\draw [line width = 0.5mm, white] (48.,-178.) -- (48.,-186.);
+\fill [black!15] (9.,-178.) -- (9.,-186.) -- (48.,-186.) -- (48.,-178.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (28.5,-182.) node{\smash{$\ml[t]{α\doteq ε}$}};
+\end{pgfonlayer}
+\draw [white, line width = 0.5mm, white] (66.,-178.) .. controls (66.,-183.6) and (50.,-180.4) .. (50.,-186.);
+\draw [white, line width = 0.5mm, white] (81.,-178.) .. controls (81.,-183.6) and (71.,-180.4) .. (71.,-186.);
+\fill [black!15] (66.,-178.) .. controls (66.,-183.6) and (50.,-180.4) .. (50.,-186.) -- (71.,-186.) .. controls (71.,-180.4) and (81.,-183.6) .. (81.,-178.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (9.,-191.) rectangle (71.,-186.);
+\draw [white] (9.,-188.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Concatenate empty sequence\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (73.,-186.) -- (73.,-191.);
+\draw [line width = 0.5mm, white] (81.,-186.) -- (81.,-191.);
+\fill [black!15] (73.,-186.) -- (73.,-191.) -- (81.,-191.) -- (81.,-186.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-191.) -- (5.15,-186.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-191.) -- (82.85,-186.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-191.) -- (3.15,-186.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-191.) -- (84.85,-186.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (5.15,-197.) -- (5.15,-191.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (82.85,-197.) -- (82.85,-191.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (3.15,-197.) -- (3.15,-191.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mygreen] (84.85,-197.) -- (84.85,-191.);
+\draw [line width = 0.5mm, white] (9.,-191.) -- (9.,-197.);
+\draw [line width = 0.5mm, white] (71.,-191.) -- (71.,-197.);
+\fill [black!15] (9.,-191.) -- (9.,-197.) -- (71.,-197.) -- (71.,-191.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (40.,-195.) node{\smash{$\ml[t]{α_0\doteq \rev{β}}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (73.,-191.) -- (73.,-197.);
+\draw [line width = 0.5mm, white] (81.,-191.) -- (81.,-197.);
+\fill [black!15] (73.,-191.) -- (73.,-197.) -- (81.,-197.) -- (81.,-191.) -- cycle;
+% Pen up
+% Pen down
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black!55] (3.,-202.) rectangle (85.,-197.);
+\draw [white] (3.,-199.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Fold $\mathit{list}$ def\end{tabular}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (9.,-202.) -- (9.,-208.);
+\draw [line width = 0.5mm, white] (81.,-202.) -- (81.,-208.);
+\fill [black!15] (9.,-202.) -- (9.,-208.) -- (81.,-208.) -- (81.,-202.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (45.,-206.) node{\smash{$\ml[t]{\List{\rev{α_0}}{\code y}}$}};
+\end{pgfonlayer}
+\end{tikzpicture}
+%Finished.

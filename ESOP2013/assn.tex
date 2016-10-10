@@ -1,0 +1,92 @@
+%Starting.
+\pgfdeclarelayer{frontmost}
+\pgfdeclarelayer{colnameslayer}
+\pgfsetlayers{main,frontmost,colnameslayer}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+% State has been set.
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-5.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-5.);
+\fill [black!15] (1.,0.) -- (1.,-5.) -- (13.,-5.) -- (13.,0.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (7.,-3.) node{\smash{$\ml[t]{\code{x}↦0}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-5.);
+\draw [line width = 0.5mm, white] (27.,0.) -- (27.,-5.);
+\fill [black!15] (15.,0.) -- (15.,-5.) -- (27.,-5.) -- (27.,0.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (21.,-3.) node{\smash{$\ml[t]{\code{y}↦0}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (29.,0.) -- (29.,-5.);
+\draw [line width = 0.5mm, white] (41.,0.) -- (41.,-5.);
+\fill [black!15] (29.,0.) -- (29.,-5.) -- (41.,-5.) -- (41.,0.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (35.,-3.) node{\smash{$\ml[t]{\code{z}↦0}$}};
+\end{pgfonlayer}
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (1.,-10.) rectangle (13.,-5.);
+\draw [white] (1.,-7.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}[x]:=1\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (15.,-5.) -- (15.,-10.);
+\draw [line width = 0.5mm, white] (27.,-5.) -- (27.,-10.);
+\fill [black!15] (15.,-5.) -- (15.,-10.) -- (27.,-10.) -- (27.,-5.) -- cycle;
+\draw [line width = 0.5mm, white] (29.,-5.) -- (29.,-10.);
+\draw [line width = 0.5mm, white] (41.,-5.) -- (41.,-10.);
+\fill [black!15] (29.,-5.) -- (29.,-10.) -- (41.,-10.) -- (41.,-5.) -- cycle;
+\draw [line width = 0.5mm, white] (29.,-10.) -- (29.,-13.);
+\draw [line width = 0.5mm, white] (41.,-10.) -- (41.,-13.);
+\fill [black!15] (29.,-10.) -- (29.,-13.) -- (41.,-13.) -- (41.,-10.) -- cycle;
+\draw [line width = 0.5mm, white] (1.,-10.) -- (1.,-13.);
+\draw [line width = 0.5mm, white] (13.,-10.) -- (13.,-13.);
+\fill [black!15] (1.,-10.) -- (1.,-13.) -- (13.,-13.) -- (13.,-10.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (7.,-13.) node{\smash{$\ml[t]{\code{x}↦1}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (15.,-10.) -- (15.,-13.);
+\draw [line width = 0.5mm, white] (27.,-10.) -- (27.,-13.);
+\fill [black!15] (15.,-10.) -- (15.,-13.) -- (27.,-13.) -- (27.,-10.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (15.,-18.) rectangle (27.,-13.);
+\draw [white] (15.,-15.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}[y]:=1\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (1.,-13.) -- (1.,-18.);
+\draw [line width = 0.5mm, white] (13.,-13.) -- (13.,-18.);
+\fill [black!15] (1.,-13.) -- (1.,-18.) -- (13.,-18.) -- (13.,-13.) -- cycle;
+\draw [line width = 0.5mm, white] (29.,-13.) -- (29.,-18.);
+\draw [line width = 0.5mm, white] (41.,-13.) -- (41.,-18.);
+\fill [black!15] (29.,-13.) -- (29.,-18.) -- (41.,-18.) -- (41.,-13.) -- cycle;
+\draw [line width = 0.5mm, white] (1.,-18.) -- (1.,-21.);
+\draw [line width = 0.5mm, white] (13.,-18.) -- (13.,-21.);
+\fill [black!15] (1.,-18.) -- (1.,-21.) -- (13.,-21.) -- (13.,-18.) -- cycle;
+\draw [line width = 0.5mm, white] (15.,-18.) -- (15.,-21.);
+\draw [line width = 0.5mm, white] (27.,-18.) -- (27.,-21.);
+\fill [black!15] (15.,-18.) -- (15.,-21.) -- (27.,-21.) -- (27.,-18.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (21.,-21.) node{\smash{$\ml[t]{\code{y}↦1}$}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (29.,-18.) -- (29.,-21.);
+\draw [line width = 0.5mm, white] (41.,-18.) -- (41.,-21.);
+\fill [black!15] (29.,-18.) -- (29.,-21.) -- (41.,-21.) -- (41.,-18.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\fill[fill=black] (29.,-26.) rectangle (41.,-21.);
+\draw [white] (29.,-23.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}[z]:=1\end{tabular}}};
+\end{pgfonlayer}
+\draw [line width = 0.5mm, white] (1.,-21.) -- (1.,-26.);
+\draw [line width = 0.5mm, white] (13.,-21.) -- (13.,-26.);
+\fill [black!15] (1.,-21.) -- (1.,-26.) -- (13.,-26.) -- (13.,-21.) -- cycle;
+\draw [line width = 0.5mm, white] (15.,-21.) -- (15.,-26.);
+\draw [line width = 0.5mm, white] (27.,-21.) -- (27.,-26.);
+\fill [black!15] (15.,-21.) -- (15.,-26.) -- (27.,-26.) -- (27.,-21.) -- cycle;
+\draw [line width = 0.5mm, white] (1.,-26.) -- (1.,-30.);
+\draw [line width = 0.5mm, white] (13.,-26.) -- (13.,-30.);
+\fill [black!15] (1.,-26.) -- (1.,-30.) -- (13.,-30.) -- (13.,-26.) -- cycle;
+\draw [line width = 0.5mm, white] (15.,-26.) -- (15.,-30.);
+\draw [line width = 0.5mm, white] (27.,-26.) -- (27.,-30.);
+\fill [black!15] (15.,-26.) -- (15.,-30.) -- (27.,-30.) -- (27.,-26.) -- cycle;
+\draw [line width = 0.5mm, white] (29.,-26.) -- (29.,-30.);
+\draw [line width = 0.5mm, white] (41.,-26.) -- (41.,-30.);
+\fill [black!15] (29.,-26.) -- (29.,-30.) -- (41.,-30.) -- (41.,-26.) -- cycle;
+\begin{pgfonlayer}{frontmost}
+\draw [black] (35.,-29.) node{\smash{$\ml[t]{\code{z}↦1}$}};
+\end{pgfonlayer}
+\end{tikzpicture}
+%Finished.

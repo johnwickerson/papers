@@ -1,0 +1,1396 @@
+\documentclass[runningheads,a4paper]{llncs}
+
+\def\incolour{T}
+
+\usepackage[paperwidth=15cm, paperheight=22cm, textwidth=12.2cm, textheight=19.3cm, inner=1.4cm, outer=1.4cm]{geometry}
+
+\ifdefined\incolour
+\def\myblue{blue}
+\def\myred{red}
+\def\mypurple{MediumPurple}
+\def\mygreen{SeaGreen}
+\def\mybrown{Chocolate}
+\else
+\def\myblue{black}
+\def\myred{black}
+\def\mypurple{black}
+\def\mygreen{black}
+\def\mybrown{black}
+\fi
+
+\renewcommand{\rmdefault}{ptm}
+
+\newcommand{\ribboncolor}{black!15}
+\newcommand{\varcolor}{black!21}
+\newcommand{\ribbonouterborderthickness}{0.6}
+\newcommand{\casesborderthickness}{0.6}
+\newcommand{\casesbordercolor}{black}
+\newcommand{\commandcolor}{black}
+\newcommand{\juscolor}{black!55}
+\newcommand{\commandtextcolor}{white}
+\newcommand{\shadowcolor}{black!40}
+
+\usepackage[caption=false,font=footnotesize]{subfig}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\usepackage{datetime}
+\usepackage{framed}
+
+\usepackage{JohnMath}
+\renewcommand{\true}{\ensuremath{\mathit{true}}}
+\renewcommand{\false}{\ensuremath{\mathit{false}}}
+\renewcommand{\emp}{\ensuremath{\mathit{emp}}}
+\renewcommand{\dom}{\mathop{\mathit{dom}}}
+\usepackage{calc}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{patterns}
+
+\usepackage{rotating}
+\newcommand{\mrot}[1]{\raisebox{1.7ex}{\turnbox{270}{\ensuremath{\begin{array}{@{}l@{}}#1\end{array}}}}}
+
+\newcommand{\semi}[1][]{\mathbin{\text{\bf ;}}}
+\newcommand{\stacker}[3][0mm]{{\begin{array}{@{}c@{}}#2 \\[#1] #3\end{array}}}
+\newcommand{\tstacker}[2]{\genfrac{}{}{0pt}{1}{#1}{#2}}
+
+% CODE LISTINGS
+\usepackage{listings}
+\lstset{
+  language=,
+  columns=[l]fullflexible,
+  mathescape=true,
+  basicstyle=\ttfamily,%\color{Purple},
+  showstringspaces=false,
+  commentstyle=\color{DarkGreen}, 
+  numbers=none, 
+  escapechar=£,
+  escapebegin=\rmfamily\color{Black}
+}
+%\newcommand{\code}[1]{\texttt{#1}}
+
+% SPECIFICATIONS
+\newcommand{\ml}[2][t]{\mbox{\mdseries\begin{tabular}[#1]{@{}L@{}}#2\end{tabular}}}
+\newcommand{\ass}[1]{\ensuremath{{\color{black}\left\{\ml[c]{#1}\right\}}}}
+\newcommand{\seqspec}[3]{\ass{#1}\,{\mbox{\code{#2}}}\,\ass{#3}}
+\newcommand{\Seqspec}[3]{\multicolumn{2}{l}{$\ass{#1}$ {#2} $\ass{#3}$}}
+\newcommand{\comm}[1]{\vspace{-2pt}%
+    \begin{list}{/$*$}{%
+        \topsep=5pt%
+        \leftmargin=3cm%
+      }\item #1 \hfill$*$/\end{list}%
+}
+
+\newcommand{\floorpow}[1]{\llfloor{#1}\rrfloor}
+\newcommand{\fracpow}[1]{\{\hspace{-3pt}\{{#1}\}\hspace{-3pt}\}}
+\newcommand{\defined}{\mathop{\text{def}}}
+
+\newcommand{\ribbon}[1]{
+\tikz[x=1mm, y=1mm, baseline=0]{
+\node[anchor=base, style={rectangle, fill=\ribboncolor}] (step) at (0,0) {\ensuremath{#1}};
+}
+}
+
+\newcommand{\closedribbon}[1]{\ribbon{#1}}
+
+\newcommand{\existsbox}[2]{\hspace{2mm}\rule[-0.5mm]{0.2mm}{1mm}\raisebox{1mm}{\hspace{-2mm} {\scriptsize $∃ #1$}}{#2}\,\rule[-0.5mm]{0.2mm}{3mm}}
+
+\newcommand{\closedexistsbox}[2]{\,\ensuremath{\tikz[x=1mm,y=1mm,baseline=0mm]{
+\node[anchor=base west, style={rectangle, draw=black}] at (0,0) {\,\ensuremath{#2}\!};
+\node[style={rectangle, fill=white, inner sep=0.2mm}] at (0,1.6) {\scriptsize $∃ #1$};
+}}\,}
+
+\newcommand{\ditto}{\ensuremath{\prime\prime}}
+
+\newcommand{\assn}{\mathop{\mathit{asn}}}
+\newcommand{\WR}{\mathop{\mathit{wr}}}
+\newcommand{\RD}{\mathop{\mathit{rd}}}
+\newcommand{\ileave}[1][]{\mathop{\mathit{zip}_{#1}}}
+
+\newcommand{\nakedbasicstep}[2][8]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=1mm, baseline=0]{
+\node[anchor=base, style={rectangle, minimum width=\greybarwidth mm, minimum height = 2*\greybarrad mm, fill=\commandcolor}] (step) at (0,0) {\color{\commandtextcolor}{\ensuremath{#2}}};
+}
+}
+
+\newcommand{\basicstep}[4][8]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=1mm, baseline=0]{
+\node[anchor=base, style={rectangle, minimum width=\greybarwidth mm, minimum height = 2*\greybarrad mm, fill=\commandcolor}] (step) at (0,0) {\color{\commandtextcolor}{\ensuremath{#3}}};
+\node[above=-0.5mm of step.north]{\ensuremath{#2}};
+\node[below=-0.5mm of step.south]{\ensuremath{#4}};
+}
+}
+
+\newcommand{\nakedloopdia}[2][9]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=-1mm, baseline=-2.4mm]{
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad-0.8) rectangle (\greybarwidth/2,\greybarrad-0.8);
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick] (-\greybarwidth/2, -0.8) rectangle (\greybarwidth/2,\greybarrad-0.8);
+\draw (-\greybarwidth/2,0) node[anchor=base west] {\color{\commandtextcolor}{{\tt loop}}};
+\draw (0,4.4) node[anchor=base] {\ensuremath{#2}};
+\draw [\commandcolor, ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad-0.8) rectangle (\greybarwidth/2,\greybarrad-0.8+4.6);
+%\filldraw [fill=white, draw=lightgray, ultra thick] (-\greybarwidth/2, -0.8+8.4-\greybarrad) rectangle (\greybarwidth/2,-0.8+8.4);
+}
+}
+
+\newcommand{\loopdia}[4][9]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=-1mm, baseline=-2.4mm]{
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad-0.8) rectangle (\greybarwidth/2,\greybarrad-0.8);
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick] (-\greybarwidth/2, -0.8) rectangle (\greybarwidth/2,\greybarrad-0.8);
+\draw (0,-3.6) node[anchor=base] {\ensuremath{#2}};
+\draw (-\greybarwidth/2,0) node[anchor=base west] {\color{\commandtextcolor}{{\tt loop}}};
+\draw (0,4.4) node[anchor=base] {\ensuremath{#3}};
+\draw [\commandcolor, ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad-0.8) rectangle (\greybarwidth/2,\greybarrad-0.8+4.6);
+\draw (0,8.4) node[anchor=base] {\ensuremath{#4}};
+}
+}
+
+\newcommand{\nakedchoicedia}[3][9]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=-1mm, baseline=-8.4mm]{
+\draw [\commandcolor,ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad+2.8) rectangle (\greybarwidth/2,-0.8+14.8);
+\draw (0,4.4) node[anchor=base] {\ensuremath{#2}};
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick] (-\greybarwidth/2,-\greybarrad-0.8+8.4) rectangle (\greybarwidth/2,\greybarrad-0.8+8.4);
+\draw (0,8.4) node[anchor=base] {\color{\commandtextcolor}{{\tt or}}};
+\draw (0,12.6) node[anchor=base] {\ensuremath{#3}};
+}
+}
+
+\newcommand{\choicedia}[5][9]{
+\def\greybarrad{1.7}
+\def\greybarwidth{#1}
+\tikz[x=1mm, y=-1mm, baseline=-8.4mm]{
+\draw (0,0) node[anchor=base] {\ensuremath{#2}};
+\draw [\commandcolor,ultra thick, rounded corners=\greybarrad mm] (-\greybarwidth/2,-\greybarrad+2.8) rectangle (\greybarwidth/2,-0.8+14.8);
+\draw (0,4.4) node[anchor=base] {\ensuremath{#3}};
+\filldraw [fill=\commandcolor, draw=\commandcolor, ultra thick] (-\greybarwidth/2,-\greybarrad-0.8+8.4) rectangle (\greybarwidth/2,\greybarrad-0.8+8.4);
+\draw (0,8.4) node[anchor=base] {\color{\commandtextcolor}{{\tt or}}};
+\draw (0,12.6) node[anchor=base] {\ensuremath{#4}};
+\draw (0,17) node[anchor=base] {\ensuremath{#5}};
+}
+}
+
+\newcommand{\coms}{\mathop{\mathit{coms}}}
+\newcommand{\lin}{\mathop{\mathit{lin}}}
+\newcommand{\links}{\mathop{\mathit{links}}}
+\newcommand{\orders}{\mathop{\mathit{orders}}}
+\newcommand{\Dsem}[1]{\sem{#1}_{\rm dia}}
+\newcommand{\Isem}[1]{\sem{#1}_{\rm int}}
+\newcommand{\arrowuplus}{\mathbin{\stackrel{→}{\uplus}}}
+\newcommand{\arrowparallel}{\stackrel{→}{\parallel}}
+\newcommand{\TOP}{\mathop{\mathit{top}}}
+\newcommand{\BOT}{\mathop{\mathit{bot}}}
+\newcommand{\terminals}{\mathop{\mathit{terminals}}}
+\newcommand{\initials}{\mathop{\mathit{initials}}}
+\newcommand{\COM}{\mathop{\mathit{com}}}
+\newcommand{\process}{\mathop{\mathit{exec}}}
+\newcommand{\chains}{\mathop{\mathit{chains}}}
+\newcommand{\acyclic}{\mathop{\mathit{acyclic}}}
+\newcommand{\linear}{\mathop{\mathit{linear}}}
+
+%\newcommand{\isabelle}{\raisebox{0.3mm}{\renewcommand{\arraystretch}{0.53}\begin{tabular}{@{}|@{}c@{}|@{}}\hline\scalebox{0.52} {\:Isabelle\:}\\\hline\end{tabular}}}
+
+%\newcommand{\isabelle}{\raisebox{0.2mm}{\renewcommand{\arraystretch}{0.4}\begin{tabular}{@{}|@{}c@{}|@{}}\hline \\[-1mm] {\:{\small Isabelle}\:}\\\hline\end{tabular}}}
+
+\newcommand{\isabelle}{
+\begin{tikzpicture}[x=0.8mm, y=0.8mm, baseline=-0.3mm, line join=round]
+\begin{scope}[yslant=-0.5]
+  \draw (0,0) rectangle (1,1);
+  \draw (2,1) rectangle (3,2);
+  \draw (1,2) rectangle (2,3);
+\end{scope}
+\begin{scope}[yslant=0.5]
+  \filldraw[black] (1,-1) rectangle (2,0);
+  \filldraw[black] (3,-2) rectangle (4,-1);
+  \filldraw[black] (2,0) rectangle (3,1);
+\end{scope}
+\begin{scope}[yslant=0.5,xslant=-1]
+  \draw (1,0) rectangle (2,1);
+  \draw (2,-1) rectangle (3,0);
+  \draw (3,1) rectangle (4,2);
+\end{scope}
+\end{tikzpicture}
+}
+
+\hyphenation{as-sump-tion in-ter-me-di-ate as-ser-tion white-space}
+
+\title{Ribbon Proofs for Separation Logic }
+
+\author{John Wickerson\inst{1} \and Mike Dodds\inst{2} \and Matthew Parkinson\inst{3}}
+\institute{Technische Universität Berlin, Germany \and University of York, United Kingdom \and Microsoft Research Cambridge, United Kingdom}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{footnote}{0}
+
+\begin{abstract}
+We present \emph{ribbon proofs}, a diagrammatic system for proving program correctness based on separation logic. Ribbon proofs emphasise the structure of a proof, so are intelligible and pedagogical. Because they contain less redundancy than proof outlines, and allow each proof step to be checked locally, they may be more scalable. Where proof outlines are cumbersome to modify, ribbon proofs can be visually manoeuvred to yield proofs of variant programs. This paper introduces the ribbon proof system, proves its soundness and completeness, and outlines a prototype tool for validating the diagrams in \emph{Isabelle}.
+\end{abstract}
+
+\section{Introduction}
+
+A program proof should not merely certify \emph{that} a program is correct; it should explain \emph{why} it is correct. A proof should be more than `true': it should be informative, and it should be intelligible. This paper does not contribute new methods for proving more properties of more programs, but rather, a new way to present such proofs. Building on work by Bean~\cite{bean06}, we present a system that produces program proofs in separation logic that are readable, scalable, and easily modified.
+
+A program proof in Hoare logic~\cite{hoare69} is usually presented as a \emph{proof outline}, in which the program's instructions are interspersed with `enough' assertions to allow the reader to reconstruct the derivation tree. Since emerging circa 1971, the proof outline has become the de facto standard in the literature on both Hoare logic (e.g.~\cite{ashcroft76,hoare71,owicki+76,schneider97}) and its recent descendant, separation logic (e.g.~\cite{bornat+05,dinsdale-young+10-b,dodds+09,feng09,feng+07-a,gotsman+07,hur+11,ishtiaq+01,jacobs+11,reynolds02,vafeiadis+07%,berdine+05,bornat+04,gardner+09,botincan+11,kapoor+11,
+}). Its great triumph is what might be called \emph{instruction locality}: that one can verify each instruction in isolation (by confirming that the assertions immediately above and below it form a valid Hoare triple) and immediately deduce that the entire proof is correct. 
+
+\begin{figure}[t]%
+\centering
+\subfloat[A proof outline]{%
+\label{fig:proofoutline}%
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l@{~~}l@{}}
+{\scriptsize 1}&{\renewcommand{\arraystretch}{1}\ass{\code{x}↦0 * \code{y}↦0 * \code{z}↦0}} \\
+{\scriptsize 2}&~~\code{[x]:=1;} \\
+{\scriptsize 3}&{\renewcommand{\arraystretch}{1}\ass{\code{x}↦1 * \code{y}↦0 * \code{z}↦0}} \\
+{\scriptsize 4}&~~\code{[y]:=1;} \\
+{\scriptsize 5}&{\renewcommand{\arraystretch}{1}\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦0}} \\
+{\scriptsize 6}&~~\code{[z]:=1;} \\
+{\scriptsize 7}&{\renewcommand{\arraystretch}{1}\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦1}}
+\end{tabular}%
+}%
+\hspace{2cm} 
+\subfloat[A ribbon proof]{%
+\begin{minipage}{1.6in}
+\label{fig:assignment_ribbonproof}%
+\begin{center}
+\noindent\input{assn}
+\end{center}
+\end{minipage}
+}%
+\caption{A simple example}
+\label{fig:assignment}
+\end{figure}
+
+Yet proof outlines also suffer several shortcomings, some of which are manifested in Fig.~\ref{fig:proofoutline}. This proof outline concerns a program that writes to three memory cells, which separation logic's \mbox{$*$-operator} deems distinct. First, it is highly repetitive: `$\code{x}↦1$' appears three times. Second, it is difficult to interpret the effect of each instruction, there being no distinction between those parts of an assertion that are actively involved and those that are merely in what separation logic calls the \emph{frame}. For instance, line~4 affects only the second conjunct of its preceding assertion, but it is difficult to deduce the assignment's effect because two unchanged conjuncts are also present. Of course, these are only minor problems in our toy example, but they quickly become devastating when scaled to serious programs.
+
+The crux of the problem is what might be called \emph{resource locality}. Separation logic~\cite{ishtiaq+01,reynolds02} specialises in this second dimension of locality. One can use separation logic's \emph{small axioms} to reason about each instruction as if it were executing in a state containing only the resources (i.e.\ memory cells) that it needs, and immediately deduce its effect on the entire state using the \emph{frame rule}. The proof outline below depicts this mechanism for line 4 of Fig.~\ref{fig:proofoutline}. 
+\[
+\small
+\begin{array}{@{}l}\text{frame}\\\code{x}↦1 * \code{z}↦0\end{array} ~ \textrm{-}\hspace{-5.5pt}\left[\begin{array}{l}
+\ass{\code{x}↦1 * \code{y}↦0 * \code{z}↦0} \\[1mm]
+\left.\begin{array}{@{}l}
+~~\ass{\code{y}↦0}\\[1mm]
+~~~~\code{[y]:=1;}\\[1mm]
+~~\ass{\code{y}↦1}
+\end{array}\qquad\qquad\qquad\right]\hspace{-5.5pt}\textrm{-} \begin{array}{l@{}}\text{small axiom}\\\text{for heap update}\end{array} \\
+\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦0}
+\end{array}\right.
+\]
+Showing such detail throughout a proof outline would clarify the effect of each instruction, but escalate the repetition. Cleverer use of the frame rule can help, but only a little -- see Sect.~\ref{sect:future}. Essentially, we need a new proof representation to harness the new technology separation logic provides, and we propose the {\bf ribbon proof}.
+
+Figure~\ref{fig:assignment_ribbonproof} gives an example. The repetition has disappeared, and each instruction's effect is now clear: it affects exactly those assertions directly above and below it, while framed assertions (which must not mention variables written by the instruction) pass unobtrusively to the left or right. Technically, we are still invoking the frame rule at each instruction, but crucially in a ribbon proof, such invocations are implicit and do not complicate the diagram.
+
+A bonus of this particular ribbon proof is that it emphasises that the three assignments update different memory cells. They are thus independent, and amenable to reordering or parallelisation. One can imagine obtaining a proof of the transformed program by simply sliding the left-hand column downward and the right-hand column upward. The corresponding proof outline neither suggests nor supports such manoeuvres. 
+
+Where a proof outline essentially flattens a proof to a list of assertions and instructions, our system produces geometric objects that can be navigated and modified by leveraging human visual intuition, and whose basic steps correspond exactly to separation logic's small axioms. A ribbon proof de-emphasises the program's shallow syntax, such as the order of independent instructions, and illuminates instead the deeper structure, such as the flow of resources through the code. Proof outlines focus on Hoare triples $\{p\}\,c\,\{q\}$, and often neglect the details of entailments between assertions, $p⇒q$, even though such entailments often encode important insights about the program being verified. Ribbon proofs treat both types of judgement equally, within the same system.
+
+There are many recent extensions of separation logic (e.g.~\cite{dinsdale-young+13,dinsdale-young+10-b,dodds+09,feng09,feng+07-a,gotsman+07,hur+11,jacobs+11,ohearn07,vafeiadis+07%,kapoor+11
+}) to which our ribbon proof technology can usefully be applied; indeed, ribbons have already aided the development of a separation logic for relaxed memory~\cite{bornat+12}. All of these program logics are based on increasingly complex reasoning principles, of which clear explanations are increasingly vital. We propose ribbon proofs as the ideal device for providing them.
+
+\subsubsection{Comparison with Bean's system} Bean~\cite{bean06} introduced ribbon proofs as an extension of Fitch's \emph{box proofs}~\cite{fitch52} to handle the propositional fragment of bunched implications logic (BI)~\cite{ohearn+99}. BI being the basis of separation logic's assertion language~\cite{ishtiaq+01}, his system can be used to prove entailments between propositional separation logic assertions. Our system expands Bean's into a full-blown program logic by adding support for commands and existentially-quantified variables. It is further distinguished by its treatment of ribbon proofs as graphs, which gives our diagrams an appealing degree of flexibility.
+
+\subsubsection*{Contributions and paper outline} We describe a diagrammatic proof system that enables a natural presentation of separation logic proofs. We prove it sound and complete with respect to separation logic (Sect.~\ref{sect:formalisation}). We also give an alternative, graphical formalisation (Sect.~\ref{sect:v_a_r}), which is sound in the absence of the frame rule's side-condition.
+
+We describe a prototype tool (Sect.~\ref{sect:tool}) for mechanically checking ribbon proofs with the \emph{Isabelle} proof assistant. Given a small proof script for each basic step, our tool assembles a script that verifies the entire diagram. Such tediums as the associativity and commutativity of~$*$ are handled in the graphical structure, leaving the user to focus on the interesting parts of the proof. 
+
+We discuss (Sect.~\ref{sect:future}) extensions to handle concurrent separation logic, possible applications to parallelisation, and connections to proof nets, bigraphs and string diagrams.
+
+We begin by introducing our ribbon proof system with the aid of an example. Further examples can be found in Wickerson's PhD dissertation~\cite{wickerson13}. Of those, our ribbon proof of the Version 7 Unix memory manager demonstrates that our system can present readable proofs of more complex programs than those considered in this paper.
+
+\section{An example}\label{sect:informal_development}
+
+\newcommand{\lseg}[2]{\mathit{ls}\,{#1}\,{#2}}
+\newcommand{\List}[2]{\mathit{list}\,{#1}\,{#2}}
+
+\newcommand{\rev}[1]{#1^\dagger}
+
+\begin{figure}[t]
+\centering
+\def\ang{20}
+\tikzstyle{ribbon}=[fill = black!15]
+\tikzstyle{bendribbon}=[shade,
+                        top color = white,
+                        bottom color = black!30,
+                        shading angle = \ang]
+\tikzstyle{backbend}=[shading angle = 180+\ang]
+\def\yb{5.5}
+\def\yc{7}
+\def\x{1}
+\def\w{1.5}
+{\small (a)}~~$\begin{array}{@{}l@{}}
+\vspace{-3mm}
+%\makeribbonproof{whilestatement.tex}{1}
+\noindent\input{whilepic}
+\end{array}$
+~~~~$\approx$\!\!
+\hspace{-5mm}\raisebox{-10mm}{
+\def\ya{2.2}
+\def\yb{1.8}
+\def\dyup{1}
+\def\dydown{0.5}
+\def\vaup{80}
+\def\vadown{60}
+\def\dx{.9}
+\def\dxa{.4}
+\begin{tikzpicture}[rotate=\ang, scale=.5]
+   \draw[ribbon]
+   (0, 0) -- (0, \ya) -- (\w, \ya) -- (\w, 0) -- cycle;
+   \draw[ribbon]
+   (0, \ya) -- (0, \ya+\yb) -- (\w, \ya+\yb) -- (\w, \ya) -- cycle;
+   \draw[ribbon]
+   (0, \ya) to[out=\vadown, in=180] (\dx, \ya+\dydown) -- (\w+\dx, \ya+\dydown) to[out=180, in=\vadown] (\w, \ya) -- cycle;
+   \draw[bendribbon, backbend]
+   (0, \ya) to[out=-\vaup, in=180] (\dx, \ya-\dyup) -- (\w+\dx, \ya-\dyup) to[out=180, in=-\vaup] (\w, \ya)  -- cycle;
+   \draw[bendribbon]
+  (\w+\dx, \ya+\dydown) to[out=0, in=90] (\w+\dx+\dxa, \ya) to[out=-90, in=0] (\w+\dx, \ya-\dyup) -- (\dx, \ya-\dyup) to[out=0, in=-90] (\dx+\dxa, \ya) to[out=90, in=0] (\dx, \ya+\dydown)  -- cycle;
+
+   \node at (.5*\w, \yb+.7*\ya) {$A$};
+   \node at (.5*\w+\dx+\dxa, \ya+.5*\dydown-.5*\dyup) {$B$};
+   \node at (.5*\w, .3*\ya) {$C$};
+\end{tikzpicture}
+}
+\def\ang{20}
+\tikzstyle{ribbon}=[fill = black!15]
+\tikzstyle{bendribbon}=[shade,
+                        top color = white,
+                        bottom color = black!30,
+                        shading angle = \ang]
+\tikzstyle{backbend}=[shading angle = 180+\ang]
+\def\yb{5.5}
+\def\yc{7}
+\def\x{1}
+\def\w{1.5}
+{
+{\small (b)}~~
+$\begin{array}{@{}l@{}}\vspace{-3mm}
+%\makeribbonproof{ifstatement.tex}{1}
+\noindent\input{ifpic}
+\end{array}$
+~~~~$\approx$\!\!
+\raisebox{-16mm}{
+\def\ya{1.5}
+\begin{tikzpicture}[bend angle=60, rotate=\ang, scale=.5]
+   \draw[ribbon]
+   (0, 0) -- (0, \ya) -- (\w, \ya) -- (\w, 0) -- cycle;
+   \draw[bendribbon, backbend]
+   (0, \ya) to [bend left] (0, \yb) -- (\w, \yb) to [bend right] (\w, \ya) -- cycle;
+   \draw[bendribbon]
+   (0, \ya) to [bend right] (0, \yb) -- (\w, \yb) to [bend left] (\w, \ya) -- cycle;
+  \draw[ribbon]
+   (0, \yb) -- (0, \yc) -- (\w, \yc) -- (\w, \yb) -- cycle;
+
+   \node at (.5*\w, \yb + .5*\yc - .5*\yb) {$A$};
+   \node at (.5*\w + \x, \ya + .5*\yb - .5*\ya) {$B$};
+   \node at (.5*\w - \x, \ya + .5*\yb - .5*\ya) {$C$};
+   \node at (.5*\w, .5*\ya) {$D$};
+\end{tikzpicture}
+}
+}
+\caption{While-loops and if-statements, pictorially}
+\label{fig:ifwhilepic}
+\end{figure}
+
+\begin{figure}[tp]%
+\centering
+\subfloat[A proof outline]{%
+\label{fig:listrev_proof_outline}
+\begin{minipage}{2.1in}%
+\renewcommand{\arraystretch}{1}
+\newcommand\johnindent{~~}
+\hspace{-1mm}\begin{tabular}{@{}l@{~}l@{}}
+{\scriptsize 1}&\ass{\List{α_0}{\code x}} \\
+{\scriptsize 2}&\code{y:=nil;} \\
+{\scriptsize 3}&\ass{\List{α_0}{\code x} * \List{ε}{\code y}}\\
+{\scriptsize 4}&\code{// Choose $α:=α_0$ and $β:=ε$}\\
+{\scriptsize 5}&\code{while} \ass{∃α,β．\List{α}{\code x} * \List{β}{\code y} * α_0\doteq \rev{β}·α} \\
+&\code{(x!=nil) \{}\\
+{\scriptsize 6}&\johnindent\ass{∃α,β．\code{x} \dotneq \code{nil} * \List{α}{\code x} * \List{β}{\code y} {}\\{}* α_0\doteq \rev{β}·α}\\
+{\scriptsize 7}&\johnindent\code{// Unfold $\mathit{list}$ def}\\
+{\scriptsize 8}&\johnindent\ass{∃α,β．(∃α',i,Z．\code{x}↦i,Z * \List{α'}{\code z} {}\\{} * α \doteq i·α') * \List{β}{\code y} * α_0\doteq \rev{β}·α}\\
+{\scriptsize 9}&\johnindent\code{// Choose $α:=α'$}\\
+{\scriptsize 10}&\johnindent\ass{∃α,β,i,Z．{\code x}↦i,Z * \List{α}{Z} {}\\{} * α_0\doteq \rev{β}·(i·α) * \List{β}{\code y}}\\
+{\scriptsize 11}&\johnindent\code{z:=[x+1];}\\
+{\scriptsize 12}&\johnindent\ass{∃α,β,i．\List{α}{\code z} * {\code x}↦i,{\code z} {}\\{} * α_0\doteq \rev{β}·(i·α) * \List{β}{\code y}}\\
+{\scriptsize 13}&\johnindent\code{// Reassociate $i$}\\
+{\scriptsize 14}&\johnindent\ass{∃α,β,i．\List{α}{\code z} * {\code x}↦i,{\code z} {}\\{} * α_0\doteq \rev{(i·β)}·α * \List{β}{\code y}}\\
+{\scriptsize 15}&\johnindent\code{[x+1]:=y;}\\
+{\scriptsize 16}&\johnindent\ass{∃α,β,i．\List{α}{\code z} * {\code x}↦i,{\code y} {}\\{} * α_0\doteq \rev{(i·β)}·α * \List{β}{\code y}}\\
+{\scriptsize 17}&\johnindent\code{// Fold $\mathit{list}$ def}\\
+{\scriptsize 18}&\johnindent\ass{∃α,β,i．\List{α}{\code z} * \List{(i·β)}{\code x} {}\\{} * α_0\doteq \rev{(i·β)}·α}\\
+{\scriptsize 19}&\johnindent\code{// Choose $β:=(i·β)$}\\
+{\scriptsize 20}&\johnindent\ass{∃α,β．\List{α}{\code z} * \List{β}{\code x} * α_0\doteq \rev{β}·α} \\
+{\scriptsize 21}&\johnindent\code{y:=x;} \\
+{\scriptsize 22}&\johnindent\ass{∃α,β．\List{α}{\code z} * \List{β}{\code y} * α_0\doteq \rev{β}·α} \\
+{\scriptsize 23}&\johnindent\code{x:=z;}\\
+{\scriptsize 24}&\johnindent\ass{∃α,β．\List{α}{\code x} * \List{β}{\code y} * α_0\doteq \rev{β}·α} \\
+{\scriptsize 25}&\code{\}}\\
+{\scriptsize 26}&\ass{∃α,β．\code{x}\doteq \code{nil} * \List{α}{\code x} * \List{β}{\code y} {}\\{} * α_0\doteq \rev{β}·α}\\
+{\scriptsize 27}&\code{// Unfold $\mathit{list}$ def}\\
+{\scriptsize 28}&\ass{∃α,β．α\doteq ε * \List{β}{\code y} * α_0\doteq \rev{β}·α}\\
+{\scriptsize 29}&\code{// Concatenate empty sequence}\\
+{\scriptsize 30}&\ass{∃β．\List{β}{\code y} * α_0\doteq \rev{β}}\\
+{\scriptsize 31}&\code{// Fold $\mathit{list}$ def}\\
+{\scriptsize 32}&\ass{\List{\rev{α_0}}{\code y}}
+\end{tabular}
+\end{minipage}
+}
+\subfloat[A ribbon proof]{%
+\label{fig:listrev_proof_ribbon}
+\begin{minipage}{2.8in}
+\noindent\input{listrev_ribbon}
+\end{minipage}
+}
+\caption{Two proofs of list reverse}
+\label{fig:listrev_proof}
+\end{figure}
+
+Let us consider a simple program for in-place reversal of a linked list. 
+
+Figure~\ref{fig:listrev_proof_outline} presents a proof of this program as a proof outline (adapted from~\cite{reynolds02}). For a binary relation $r$, we write $x\mathrel{\dot{r}}y$ for $x\mathrel{r}y ∧ \emp$, where $\emp$ describes an empty heap. We write $ε$ for the empty sequence, $\rev{(-)}$ for sequence reversal, and~$·$ for cons and concatenation. We define the $\List{α}x$ predicate by induction on the length of the sequence $α$:
+\[
+\List{ε}x ~\eqdef~ (x\doteq\code{nil})\qquad\List{(i·α')}x~\eqdef~ (∃x'．x↦i,x' * \List{α'}{x'}),
+\]
+where $x↦y,z$ abbreviates $(x↦y) * (x+1↦z)$.
+
+The invariant (line~5) states that {\code x} and {\code y} are linked lists representing two sequences $α$ and $β$ such that the initial sequence $α_0$ is obtained by concatenating the reverse of $β$ onto $α$. Our proof outline seeks to clarify the proof by making minimal changes between successive assertions, despite this making the proof large and highly redundant. Alternatively, intermediate assertions can be elided, but this can make the proof hard to follow. Either way, proof outlines do not make the structure of the proof clear.
+
+Figure~\ref{fig:listrev_proof_ribbon} presents a ribbon proof for the same program. It comprises
+\begin{itemize}
+\item \emph{steps}, each labelled with an instruction (black) or a justification of an entailment (dark grey),
+\item \emph{ribbons} (light grey), each labelled with an assertion, and 
+\item \emph{existential boxes}, which delimit the scope of logical variables.
+\end{itemize}
+\noindent The ribbon proof advances vertically, and the resources (memory cells) being operated upon are distributed horizontally across the ribbons. Instructions are positioned according to the resources they access, not merely according to the syntax of the program, as in the proof outline. Horizontal separation between ribbons corresponds to the separating conjunction of the assertions on those ribbons; that is, parallel ribbons refer to disjoint sets of memory cells. Because $*$ is commutative, we can `twist' one ribbon over another. The resource distribution is not only unordered, but also non-uniform, so the width of a ribbon is not proportional to the amount of resource it describes. In particular, the assertion `$\code{x}\dotneq \code{nil}$' obtained upon entering the while-loop describes no memory cells at all; it merely states that the program variable \code{x} is not the null pointer. A gap in the diagram (e.g.\ above the `\code{y:=nil}' step) corresponds to the `$\emp$' assertion.
+
+While-loops are special steps that contain further nested steps. The loop invariant is the collection of ribbons and existential boxes entering the top of the loop. This collection must be recreated at the end of the loop body, so that one could roll the proof into the shape drawn in Fig.~\ref{fig:ifwhilepic}a. If-statements are not depicted in our example, but appear in Wickerson's PhD dissertation~\cite{wickerson13}. They are treated straightforwardly: the ribbons and boxes entering the then-branch must match those entering the else-branch, and likewise at the two exit points, so that the proof could be cut and folded into the three-dimensional shape suggested in Fig.~\ref{fig:ifwhilepic}b.
+
+After the `\code{z:=[x+1]}' step, the assertion `$\List{α}{\code z}$' is not needed for a while. In a proof outline, this assertion would either be temporarily removed via an explicit application of the frame rule or, as is done in Fig.~\ref{fig:listrev_proof_outline}, redundantly repeated at every intermediate point. In the ribbon proof, it slides discreetly down the left-hand side. This indicates that the assertion is \emph{inactive} without suggesting that it has been \emph{removed}.
+
+The proof outline obscures the usage of the logical variables $α$ and $β$. The witness for $α$ changes after line~8, then stays the same until line~24; meanwhile, $β$'s witness is constant through lines~5 to~18 before becoming the previous witness prepended with $i$. This structure can only be spotted through careful examination of the proof outline (aided by the textual hints on lines~9 and~19). The scoping of logical variables in the ribbon proof, through the use of existential boxes, is far more satisfactory. Boxes extend horizontally across several ribbons, but also vertically to indicate the range of steps over which the same witness is used. Horizontally, existential boxes must be well-nested;
+\begin{wrapfigure}{r}{3.5cm}%
+\centering
+\vspace{-6mm}
+\noindent\input{existentialboxes}
+\caption{Existential boxes, vertically overlapping}
+\vspace{-3mm}
+\label{fig:dynamic_scoping}
+\end{wrapfigure} 
+this corresponds to the static scoping of existential quantifiers in assertions. Vertically, however, boxes may overlap. Figure~\ref{fig:dynamic_scoping} depicts how the boxes for $α$ and $β$ overlap in Fig.~\ref{fig:listrev_proof_ribbon}. As explained in Sect.~\ref{sect:formalisation_syntax}, such `overlaps' are formally treated as entailment steps of the form $∃x．∃y．p ⇒ ∃y．∃x．p$. Similarly, boxes may be stretched horizontally (see, for instance, immediately below the loop in Fig.~\ref{fig:listrev_proof_ribbon}) in accordance with the entailment $p * (∃x．q) ⇒ ∃x．p * q$ (for $x$ not in $p$). We thus obtain an intriguing proof structure -- present in neither the proof outline nor the underlying derivation tree -- in which the scopes of logical variables do not follow the program's syntactic structure, but are instead \emph{dynamically} scoped. Section~\ref{sect:future} contains further discussion.
+
+We close this section by explaining a shortcoming in the proof system as currently presented. One nicety of Fig.~\ref{fig:listrev_proof_ribbon} is that the `Reassociate $i$' entailment, being horizontally separated from its neighbouring proof steps, can clearly be moved a little earlier or later. (Close inspection is necessary to discover this from the proof outline.) But similar reasoning allows the assignments `\code{y:=x}' and `\code{x:=z}' to be swapped, unsoundly. We ensure our proof system is sound either by forbidding such manoeuvres altogether (Sect.~\ref{sect:formalisation}) or by encoding variable dependencies into the ribbons themselves (Sect.~\ref{sect:v_a_r}).
+
+\section{Formalisation}\label{sect:formalisation}
+
+Let us now formalise the concepts introduced in the previous section. We introduce in Sect.~\ref{sect:formalisation_syntax} a two-dimensional syntax for diagrams, and explain how it can generate the pictures we have already seen. We present the rules of our diagrammatic proof system in Sect.~\ref{sect:formalisation_proofrules}. We relate ribbon proofs to separation logic in Sect.~\ref{sect:formalisation_semantics}.
+
+Proofs performed by hand are annotated with $\squareforqed$, while those mechanically verified using the \emph{Isabelle} proof assistant are annotated with $\isabelle$, and can be viewed online at:
+%\begin{quote}
+\url{http://www.cl.cam.ac.uk/~jpw48/ribbons.html}
+%\end{quote}
+
+\begin{definition}[Assertions] Let $p$ range over a set of ordinary separation logic assertions, containing at least the following constructions:
+\begin{eqnarray*}
+{\sf Assertion} &~≝~& \{p ::= \emp \mid p * p \mid ∃x．p \mid \ldots\}.
+\end{eqnarray*}
+\end{definition}
+
+\begin{definition}[Commands]
+Let $c$ range over the commands of a sequential programming language, containing at least sequential composition (which is associative), {\upshape $\code{skip}$} (the unit of sequential composition), and non-deterministic choice and looping: \upshape
+\begin{eqnarray*}
+{\sf Command} &~≝~& \{c ::= c \mathbin{\code{;}} c \mid \code{skip} \mid c \mathbin{\code{or}} c \mid \mathop{\code{loop}} c \mid \ldots\}.
+\end{eqnarray*}
+\end{definition}
+If a primitive `$\mathop{\code{assume}} b$' command is available (where $b$ is a \emph{pure} assertion; that is, independent of the heap) then standard if-statements and while-loops can be derived: 
+\begin{eqnarray*}
+\code{if}~b~\code{then}~c_1~\code{else}~c_2 &~≝~& ( \mathop{\code{assume}} b \mathbin{\code{;}} c_1) \mathbin{\code{or}} (\mathop{\code{assume}} \neg b \mathbin{\code{;}} c_2) 
+\\
+\code{while}~b~\code{do}~c &~≝~& \mathop{\code{loop}}(\mathop{\code{assume}} b \mathbin{\code{;}} c) \mathbin{\code{;}} \mathop{\code{assume}} \neg b.
+\end{eqnarray*}
+
+\begin{figure}[t]
+\begin{mathpar}
+\inferrule
+{ \prov[SL]\{p\}\,c\,\{q\} \\ \mathit{wr}(c)∩\mathit{rd}(r)=∅}
+{ \prov[SL]\{p * r\}\,c\,\{q * r\} }
+\and
+\inferrule
+{ (p,c,q)∈{\sf Axioms} }
+{ \prov[SL]\{p\}\,c\,\{q\} }
+\and
+\inferrule
+{\prov[SL]\{p\}\,c\,\{q\}}{\prov[SL]\{∃x．p\}\,c\,\{∃x．q\}}
+\and
+\inferrule
+{ \prov[SL]\{p_1\}\,c\,\{q_1\} \\\\ \prov[SL]\{p_2\}\,c\,\{q_2\}}
+{ \prov[SL]\{p_1∨p_2\}\,c\,\{q_1∨q_2\} }
+\and
+\inferrule
+{ \prov[SL]\{p'\}\,c\,\{q'\} \\\\ p⇒p' \\ q'⇒q}
+{ \prov[SL]\{p\}\,c\,\{q\} }
+\and
+\inferrule
+{ \prov[SL]\{p\}\,c_1\,\{q\} \\\\ \prov[SL]\{p\}\,c_2\,\{q\}}
+{ \prov[SL]\{p\}\,c_1\mathbin{\code{or}}c_2\,\{q\} }
+\and
+\inferrule
+{\prov[SL]\{p\}\,c_1\,\{q\} \\ \prov[SL]\{q\}\,c_2\,\{r\}}
+{\prov[SL]\{p\}\,c_1\code{;}c_2\,\{r\}}
+\and
+\inferrule
+{ }{\prov[SL]\{p\}\,\code{skip}\,\{p\}}
+\and
+\inferrule
+{ \prov[SL]\{p\}\,c\,\{p\} }
+{ \prov[SL]\{p\}\,\mathop{\code{loop}} c\,\{p\} }
+\end{mathpar}
+\caption{Proof rules for commands}
+\label{fig:prov_com}
+\end{figure}
+
+\noindent We assume a separation logic comprising the rules given in Fig.~\ref{fig:prov_com} plus a set of {\sf Axioms}. In the first rule, the \emph{frame rule}, the $\mathit{rd}$ and $\mathit{wr}$ functions respectively extract the sets of program variables read and written.
+
+\begin{remark}
+We do not consider Hoare logic's conjunction rule in this paper. Conjunction and universal quantification can still appear inside individual ribbon assertions. We could design graphical analogues (which would resemble our treatment of disjunction and existential quantification) but this would complicate our graphical language with constructs that are seldom used in separation logic proofs.
+\end{remark}
+
+\subsection{Syntax of diagrams}\label{sect:formalisation_syntax}
+
+We present a syntax that can generate the pictures seen in the preceding section. Each diagram is built up as a sequence of rows, each containing a single proof step. We thus refer to such diagrams as `stratified'. (Section~\ref{sect:v_a_r} will present an alternative formalisation that does not impose such strict sequentiality.) We begin by introducing \emph{interfaces}, which are the top and bottom boundaries through which diagrams can be composed.
+
+\begin{definition}[Interfaces] An interface is either a single ribbon labelled with an assertion, an empty interface (shown as whitespace in pictures), two interfaces side by side, or an existential box wrapped around an interface:
+\[
+{\sf Interface} ~≝~ \{P ::= ~~\ribbon{p} ~~\mid~~ \varepsilon ~~\mid~~ P\,P ~~\mid~~ \existsbox{x}{P}~~\}.
+\]
+\end{definition}
+
+\noindent The $\assn$ function maps an interface to the assertion it represents:
+\begin{mathpar}
+\begin{array}{@{}l@{~~}c@{~~}l@{}}
+\assn \ribbon{p} &=& p \\
+\assn \varepsilon &=& \emp
+\end{array}
+\and
+\begin{array}{@{}l@{~~}c@{~~}l@{}}
+\assn\,(P\,Q) &=& \assn P * \assn Q \\
+\assn \existsbox{x}{P} &=& ∃x．\assn P.
+\end{array}
+\end{mathpar}
+
+\noindent When clarity demands it, we shall write $P ⊗ Q$ instead of $P\,Q$, and hence $⊗_{i∈I}P_i$ for iterated composition. We equate interfaces up to $(P\,Q)\,R = P\,(Q\,R)$, $P\,\varepsilon = \varepsilon\,P = P$ and $P\,Q = Q\,P$. Since $\otimes$ commutes, ribbon `twisting' is merely a presentational artefact. 
+
+A \emph{diagram} can be thought of as a mapping between two interfaces.
+
+\begin{definition}[Diagrams] A diagram $D∈{\sf Diagram}$ is a non-empty list of \emph{rows} $ρ∈{\sf Row}$. When space permits, we align the list elements in a single column without punctuation. A row is a pair $(γ,F)$ comprising a \emph{cell} $γ∈{\sf Cell}$ and a \emph{frame} $F∈{\sf Interface}$. The syntax of cells is as follows:
+\vspace{-5mm}\begin{center}
+\small ${\sf Cell} ~~≝~~ \{γ ::=~ P \mid \basicstep{P}{c}{P}
+\mid \existsbox{x}{\,D} 
+~\mid \choicedia{P}{D}{D}{P}
+\mid \loopdia{P}{D}{P}\,\}.$
+\end{center}
+\end{definition}
+
+\begin{figure}[tp]
+\centering
+\subfloat[Stratified]{
+\scalebox{0.97}{
+\hspace{-2mm}\begin{minipage}{66mm}
+\noindent $\left(\hspace{-1mm}\raisebox{-9mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (6.15,-8.) -- (6.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mybrown] (41.85,-8.) -- (41.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (1.15,-8.) -- (1.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (43.85,-8.) -- (43.85,0.);
+\draw [line width = 0.5mm, white] (8.,0.) -- (8.,-8.);
+\draw [line width = 0.5mm, white] (21.,0.) -- (21.,-8.);
+\fill [black!15] (8.,0.) -- (8.,-8.) -- (21.,-8.) -- (21.,0.) -- cycle;
+\draw [black] (14.5,-3.) node{\smash{$\ml[t]{\List{}{}\\(i·β)\,{\code x}}$}};
+\draw [line width = 0.5mm, white] (23.,0.) -- (23.,-8.);
+\draw [line width = 0.5mm, white] (40.,0.) -- (40.,-8.);
+\fill [black!15] (23.,0.) -- (23.,-8.) -- (40.,-8.) -- (40.,0.) -- cycle;
+\draw [black] (31.5,-3.) node{\smash{$\ml[t]{α_0\doteq {}\\{} \rev{(i·β)}·α}$}};
+\fill[fill=black!55] (1.,-13.) rectangle (44.,-8.);
+\draw [white] (1.,-10.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Choose $β := (i·β)$\end{tabular}};
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (1.15,-19.) -- (1.15,-13.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (43.85,-19.) -- (43.85,-13.);
+\draw [line width = 0.5mm, white] (8.,-13.) -- (8.,-19.);
+\draw [line width = 0.5mm, white] (21.,-13.) -- (21.,-19.);
+\fill [black!15] (8.,-13.) -- (8.,-19.) -- (21.,-19.) -- (21.,-13.) -- cycle;
+\draw [black] (14.5,-17.) node{\smash{$\ml[t]{\List{β}{\code x}}$}};
+\draw [line width = 0.5mm, white] (23.,-13.) -- (23.,-19.);
+\draw [line width = 0.5mm, white] (40.,-13.) -- (40.,-19.);
+\fill [black!15] (23.,-13.) -- (23.,-19.) -- (40.,-19.) -- (40.,-13.) -- cycle;
+\draw [black] (31.5,-17.) node{\smash{$\ml[t]{α_0\doteq \rev{β}·α}$}};
+\fill [white] (0.,-14.3) -- (0.,-17.8) -- (3.,-17.8) -- (3.,-14.3) -- cycle;
+\draw [black] (-3.,-16.) node[anchor=west,\mypurple]{$∃β$};
+\fill [white] (5.,-1.3) -- (5.,-4.8) -- (8.,-4.8) -- (8.,-1.3) -- cycle;
+\draw [black] (2.,-3.) node[anchor=west,\mybrown]{$∃i$};
+\fill [white] (0.,-1.3) -- (0.,-4.8) -- (3.,-4.8) -- (3.,-1.3) -- cycle;
+\draw [black] (-3.,-3.) node[anchor=west,\mypurple]{$∃β$};
+\end{tikzpicture}}\,, \raisebox{-2.3mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-6.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-6.);
+\fill [black!15] (1.,0.) -- (1.,-6.) -- (13.,-6.) -- (13.,0.) -- cycle;
+\draw [black] (7.,-4.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\end{tikzpicture}}\right)\\
+\left(\hspace{-1mm}\raisebox{-8mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (21.15,-6.) -- (21.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (54.85,-6.) -- (54.85,0.);
+\draw [line width = 0.5mm, white] (3.,0.) -- (3.,-6.);
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-6.);
+\fill [black!15] (3.,0.) -- (3.,-6.) -- (15.,-6.) -- (15.,0.) -- cycle;
+\draw [black] (9.,-4.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\draw [line width = 0.5mm, white] (23.,0.) -- (23.,-6.);
+\draw [line width = 0.5mm, white] (35.,0.) -- (35.,-6.);
+\fill [black!15] (23.,0.) -- (23.,-6.) -- (35.,-6.) -- (35.,0.) -- cycle;
+\draw [black] (29.,-4.) node{\smash{$\ml[t]{\List{β}{\code x}}$}};
+\draw [line width = 0.5mm, white] (37.,0.) -- (37.,-6.);
+\draw [line width = 0.5mm, white] (53.,0.) -- (53.,-6.);
+\fill [black!15] (37.,0.) -- (37.,-6.) -- (53.,-6.) -- (53.,0.) -- cycle;
+\draw [black] (45.,-4.) node{\smash{$\ml[t]{α_0\doteq \rev{β}·α}$}};
+\fill[fill=black!55] (1.,-11.) rectangle (55.,-6.);
+\draw [white] (1.,-8.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Extend scope of $β$\end{tabular}};
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (1.15,-17.) -- (1.15,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (54.85,-17.) -- (54.85,-11.);
+\draw [line width = 0.5mm, white] (3.,-11.) -- (3.,-17.);
+\draw [line width = 0.5mm, white] (15.,-11.) -- (15.,-17.);
+\fill [black!15] (3.,-11.) -- (3.,-17.) -- (15.,-17.) -- (15.,-11.) -- cycle;
+\draw [black] (9.,-15.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\draw [line width = 0.5mm, white] (23.,-11.) -- (23.,-17.);
+\draw [line width = 0.5mm, white] (35.,-11.) -- (35.,-17.);
+\fill [black!15] (23.,-11.) -- (23.,-17.) -- (35.,-17.) -- (35.,-11.) -- cycle;
+\draw [black] (29.,-15.) node{\smash{$\ml[t]{\List{β}{\code x}}$}};
+\draw [line width = 0.5mm, white] (37.,-11.) -- (37.,-17.);
+\draw [line width = 0.5mm, white] (53.,-11.) -- (53.,-17.);
+\fill [black!15] (37.,-11.) -- (37.,-17.) -- (53.,-17.) -- (53.,-11.) -- cycle;
+\draw [black] (45.,-15.) node{\smash{$\ml[t]{α_0\doteq \rev{β}·α}$}};
+\fill [white] (20.,-1.3) -- (20.,-4.8) -- (23.,-4.8) -- (23.,-1.3) -- cycle;
+\draw [black] (17.,-3.) node[anchor=west,\mypurple]{$∃β$};
+\fill [white] (0.,-12.3) -- (0.,-15.8) -- (3.,-15.8) -- (3.,-12.3) -- cycle;
+\draw [black] (-3.,-14.) node[anchor=west,\mypurple]{$∃β$};
+\end{tikzpicture}}\,,\varepsilon\right)\\
+\left(\hspace{-1mm}\raisebox{-13mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (1.15,-27.) -- (1.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \mypurple] (54.85,-27.) -- (54.85,0.);
+\fill [white] (0.,-3.3) -- (0.,-6.8) -- (3.,-6.8) -- (3.,-3.3) -- cycle;
+\draw [black] (-3.,-5.) node[anchor=west,\mypurple]{$∃β$};
+\end{tikzpicture}}\hspace{-53mm}\begin{minipage}{53mm}$\left(\raisebox{-6mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-4.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-4.);
+\fill [black!15] (1.,0.) -- (1.,-4.) -- (13.,-4.) -- (13.,0.) -- cycle;
+\draw [black] (7.,-3.) node{\smash{$\ml[t]{\List{β}{\code x}}$}};
+\fill[fill=black] (1.,-9.) rectangle (13.,-4.);
+\draw [white] (1.,-6.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}y:=x\end{tabular}}};
+\draw [line width = 0.5mm, white] (1.,-9.) -- (1.,-13.);
+\draw [line width = 0.5mm, white] (13.,-9.) -- (13.,-13.);
+\fill [black!15] (1.,-9.) -- (1.,-13.) -- (13.,-13.) -- (13.,-9.) -- cycle;
+\draw [black] (7.,-12.) node{\smash{$\ml[t]{\List{β}{\code y}}$}};
+\end{tikzpicture}}, \raisebox{-2mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-6.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-6.);
+\fill [black!15] (1.,0.) -- (1.,-6.) -- (13.,-6.) -- (13.,0.) -- cycle;
+\draw [black] (7.,-4.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-6.);
+\draw [line width = 0.5mm, white] (31.,0.) -- (31.,-6.);
+\fill [black!15] (15.,0.) -- (15.,-6.) -- (31.,-6.) -- (31.,0.) -- cycle;
+\draw [black] (23.,-4.) node{\smash{$\ml[t]{α_0\doteq \rev{β}·α}$}};
+\end{tikzpicture}}\right)\\\left(\raisebox{-6mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-4.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-4.);
+\fill [black!15] (1.,0.) -- (1.,-4.) -- (13.,-4.) -- (13.,0.) -- cycle;
+\draw [black] (7.,-3.) node{\smash{$\ml[t]{\List{α}{\code z}}$}};
+\fill[fill=black] (1.,-9.) rectangle (13.,-4.);
+\draw [white] (1.,-6.5) node[anchor=west]{\code{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}x:=z\end{tabular}}};
+\draw [line width = 0.5mm, white] (1.,-9.) -- (1.,-13.);
+\draw [line width = 0.5mm, white] (13.,-9.) -- (13.,-13.);
+\fill [black!15] (1.,-9.) -- (1.,-13.) -- (13.,-13.) -- (13.,-9.) -- cycle;
+\draw [black] (7.,-12.) node{\smash{$\ml[t]{\List{α}{\code x}}$}};
+\end{tikzpicture}}, \raisebox{-2mm}{\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [line width = 0.5mm, white] (1.,0.) -- (1.,-6.);
+\draw [line width = 0.5mm, white] (13.,0.) -- (13.,-6.);
+\fill [black!15] (1.,0.) -- (1.,-6.) -- (13.,-6.) -- (13.,0.) -- cycle;
+\draw [black] (7.,-4.) node{\smash{$\ml[t]{\List{β}{\code y}}$}};
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-6.);
+\draw [line width = 0.5mm, white] (31.,0.) -- (31.,-6.);
+\fill [black!15] (15.,0.) -- (15.,-6.) -- (31.,-6.) -- (31.,0.) -- cycle;
+\draw [black] (23.,-4.) node{\smash{$\ml[t]{α_0\doteq \rev{β}·α}$}};
+\end{tikzpicture}}\right)$\end{minipage}\,,\varepsilon\right)$
+\end{minipage}}
+\label{fig:listrev_fragment_stratified}
+}
+~
+\subfloat[Graphical (see Sect.~\ref{sect:v_a_r})]{
+\begin{minipage}{57mm}
+\centering
+\ifdefined\incolour
+\includegraphics[width=57mm]{listrev_graph_new.pdf}
+\else
+\includegraphics[width=57mm]{listrev_graph_new_bw.pdf}
+\fi
+\hspace{-2mm}
+\label{fig:listrev_graph}
+\end{minipage}
+}
+\caption{Two ways to parse a fragment of Fig.~\ref{fig:listrev_proof_ribbon}}
+\end{figure}
+
+\noindent To illustrate how this syntax is used, Fig.~\ref{fig:listrev_fragment_stratified} shows a term of {\sf Diagram} that corresponds to a fragment of the picture in Fig.~\ref{fig:listrev_proof_ribbon}. Note that the cell in each row is always pushed to the left-hand side. In the concrete pictures, it can be moved to allow corresponding ribbons in different rows to be aligned, and hence for redundant labels to be removed. Each entailment $p⇒q$ is handled as the basic step $\seqspec{p}{\Skip}{q}$. Rather than write `$\Skip$', we label such a step with a justification of the entailment, and colour it dark grey to emphasise those steps that actually contain program instructions. Concerning existential boxes: the operations of extending, contracting and commuting are really the entailments depicted informally below. Having to show these entailments explicitly would make Fig.~\ref{fig:listrev_proof_ribbon} much more repetitive. (We are working on an improved formalisation that supports these operations directly -- see Sect.~\ref{sect:future} for further discussion.)
+\begin{center}
+\small $\begin{array}{rclrcl}
+\begin{array}{@{}l@{}}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (12.15,0.) -- (12.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (20.85,0.) -- (20.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (12.15,-7.) -- (12.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (20.85,-7.) -- (20.85,0.);
+\draw [line width = 0.5mm, white] (3.,0.) -- (3.,-7.);
+\draw [line width = 0.5mm, white] (8.,0.) -- (8.,-7.);
+\fill [black!15] (3.,0.) -- (3.,-7.) -- (8.,-7.) -- (8.,0.) -- cycle;
+\draw [black] (5.5,-3.) node{\smash{$\ml[t]{p}$}};
+\draw [line width = 0.5mm, white] (14.,0.) -- (14.,-7.);
+\draw [line width = 0.5mm, white] (19.,0.) -- (19.,-7.);
+\fill [black!15] (14.,0.) -- (14.,-7.) -- (19.,-7.) -- (19.,0.) -- cycle;
+\draw [black] (16.5,-3.) node{\smash{$\ml[t]{q}$}};
+\draw [line width = 0.5mm, white] (14.,-7.) -- (14.,-7.);
+\draw [line width = 0.5mm, white] (19.,-7.) -- (19.,-7.);
+\fill [black!15] (14.,-7.) -- (14.,-7.) -- (19.,-7.) -- (19.,-7.) -- cycle;
+\draw [line width = 0.5mm, white] (3.,-7.) -- (3.,-7.);
+\draw [line width = 0.5mm, white] (8.,-7.) -- (8.,-7.);
+\fill [black!15] (3.,-7.) -- (3.,-7.) -- (8.,-7.) -- (8.,-7.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (12.15,-7.) -- (12.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (20.85,-7.) -- (20.85,-7.);
+\draw [line width = 0.5mm, white] (14.,-7.) -- (14.,-9.);
+\draw [line width = 0.5mm, white] (19.,-7.) -- (19.,-9.);
+\fill [black!15] (14.,-7.) -- (14.,-9.) -- (19.,-9.) -- (19.,-7.) -- cycle;
+\draw [line width = 0.5mm, white] (3.,-7.) -- (3.,-9.);
+\draw [line width = 0.5mm, white] (8.,-7.) -- (8.,-9.);
+\fill [black!15] (3.,-7.) -- (3.,-9.) -- (8.,-9.) -- (8.,-7.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-9.) -- (1.15,-8.) -- (12.15,-8.) -- (12.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (20.85,-9.) -- (20.85,-7.);
+\draw [line width = 0.5mm, white] (14.,-9.) -- (14.,-17.);
+\draw [line width = 0.5mm, white] (19.,-9.) -- (19.,-17.);
+\fill [black!15] (14.,-9.) -- (14.,-17.) -- (19.,-17.) -- (19.,-9.) -- cycle;
+\draw [line width = 0.5mm, white] (3.,-9.) -- (3.,-17.);
+\draw [line width = 0.5mm, white] (8.,-9.) -- (8.,-17.);
+\fill [black!15] (3.,-9.) -- (3.,-17.) -- (8.,-17.) -- (8.,-9.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-17.) -- (1.15,-9.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (20.85,-17.) -- (20.85,-9.);
+\fill [white] (11.,-1.3) -- (11.,-4.8) -- (14.,-4.8) -- (14.,-1.3) -- cycle;
+\draw [black] (8.,-3.) node[anchor=west,\myblue]{$∃x$};
+\end{tikzpicture}
+\end{array}
+&~≝&\!\!\! 
+\begin{array}{@{}l@{}}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (15.15,0.) -- (15.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,0.) -- (23.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (15.15,-5.) -- (15.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-5.) -- (23.85,0.);
+\draw [line width = 0.5mm, white] (3.,0.) -- (3.,-5.);
+\draw [line width = 0.5mm, white] (8.,0.) -- (8.,-5.);
+\fill [black!15] (3.,0.) -- (3.,-5.) -- (8.,-5.) -- (8.,0.) -- cycle;
+\draw [black] (5.5,-3.) node{\smash{$\ml[t]{p}$}};
+\draw [line width = 0.5mm, white] (17.,0.) -- (17.,-5.);
+\draw [line width = 0.5mm, white] (22.,0.) -- (22.,-5.);
+\fill [black!15] (17.,0.) -- (17.,-5.) -- (22.,-5.) -- (22.,0.) -- cycle;
+\draw [black] (19.5,-3.) node{\smash{$\ml[t]{q}$}};
+\draw [line width = 0.5mm, white] (17.,-5.) -- (17.,-5.);
+\draw [line width = 0.5mm, white] (22.,-5.) -- (22.,-5.);
+\fill [black!15] (17.,-5.) -- (17.,-5.) -- (22.,-5.) -- (22.,-5.) -- cycle;
+\draw [line width = 0.5mm, white] (3.,-5.) -- (3.,-5.);
+\draw [line width = 0.5mm, white] (8.,-5.) -- (8.,-5.);
+\fill [black!15] (3.,-5.) -- (3.,-5.) -- (8.,-5.) -- (8.,-5.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (15.15,-5.) -- (15.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-5.) -- (23.85,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (15.15,-6.) -- (15.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-6.) -- (23.85,-5.);
+\draw [line width = 0.5mm, white] (17.,-5.) -- (17.,-6.);
+\draw [line width = 0.5mm, white] (22.,-5.) -- (22.,-6.);
+\fill [black!15] (17.,-5.) -- (17.,-6.) -- (22.,-6.) -- (22.,-5.) -- cycle;
+\draw [line width = 0.5mm, white] (3.,-5.) -- (3.,-6.);
+\draw [line width = 0.5mm, white] (8.,-5.) -- (8.,-6.);
+\fill [black!15] (3.,-5.) -- (3.,-6.) -- (8.,-6.) -- (8.,-5.) -- cycle;
+\fill[fill=black!55] (1.,-11.) rectangle (24.,-6.);
+\draw [white] (1.,-8.5) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Extend $x$'s scope\end{tabular}};
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-11.) -- (1.15,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-11.) -- (23.85,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-11.) -- (1.15,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-11.) -- (23.85,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-17.) -- (1.15,-11.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (23.85,-17.) -- (23.85,-11.);
+\draw [line width = 0.5mm, white] (3.,-11.) -- (3.,-17.);
+\draw [line width = 0.5mm, white] (8.,-11.) -- (8.,-17.);
+\fill [black!15] (3.,-11.) -- (3.,-17.) -- (8.,-17.) -- (8.,-11.) -- cycle;
+\draw [black] (5.5,-14.) node{\smash{$\ml[t]{p}$}};
+\draw [line width = 0.5mm, white] (17.,-11.) -- (17.,-17.);
+\draw [line width = 0.5mm, white] (22.,-11.) -- (22.,-17.);
+\fill [black!15] (17.,-11.) -- (17.,-17.) -- (22.,-17.) -- (22.,-11.) -- cycle;
+\draw [black] (19.5,-14.) node{\smash{$\ml[t]{q}$}};
+\fill [white] (0.,-12.3) -- (0.,-15.8) -- (3.,-15.8) -- (3.,-12.3) -- cycle;
+\draw [black] (-3.,-14.) node[anchor=west,\myblue]{$∃x$};
+\fill [white] (14.,-1.3) -- (14.,-4.8) -- (17.,-4.8) -- (17.,-1.3) -- cycle;
+\draw [black] (11.,-3.) node[anchor=west,\myblue]{$∃x$};
+\end{tikzpicture}
+\end{array} \begin{array}{l}\text{if $x$ is} \\ \text{not free} \\ \text{in $p$}
+\end{array}
+~~~~ &~~~~
+\begin{array}{@{}l@{}}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (3.15,0.) -- (3.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,0.) -- (18.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,0.) -- (8.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,0.) -- (16.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (3.15,-7.) -- (3.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-7.) -- (18.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,-7.) -- (8.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,-7.) -- (16.85,0.);
+\draw [line width = 0.5mm, white] (10.,0.) -- (10.,-7.);
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-7.);
+\fill [black!15] (10.,0.) -- (10.,-7.) -- (15.,-7.) -- (15.,0.) -- cycle;
+\draw [black] (12.5,-3.) node{\smash{$\ml[t]{p}$}};
+\draw [line width = 0.5mm, white] (10.,-7.) -- (10.,-7.);
+\draw [line width = 0.5mm, white] (15.,-7.) -- (15.,-7.);
+\fill [black!15] (10.,-7.) -- (10.,-7.) -- (15.,-7.) -- (15.,-7.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (3.15,-7.) -- (3.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-7.) -- (18.85,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,-7.) -- (8.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,-7.) -- (16.85,-7.);
+\draw [line width = 0.5mm, white] (10.,-7.) -- (10.,-9.);
+\draw [line width = 0.5mm, white] (15.,-7.) -- (15.,-9.);
+\fill [black!15] (10.,-7.) -- (10.,-9.) -- (15.,-9.) -- (15.,-7.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (3.15,-9.) -- (3.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-9.) -- (18.85,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-9.) -- (1.15,-8.) -- (8.15,-8.) -- (8.15,-7.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (20.85,-9.) -- (20.85,-8.) -- (16.85,-8.) -- (16.85,-7.);
+\draw [line width = 0.5mm, white] (10.,-9.) -- (10.,-16.);
+\draw [line width = 0.5mm, white] (15.,-9.) -- (15.,-16.);
+\fill [black!15] (10.,-9.) -- (10.,-16.) -- (15.,-16.) -- (15.,-9.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-16.) -- (1.15,-9.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (20.85,-16.) -- (20.85,-9.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (3.15,-16.) -- (3.15,-9.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-16.) -- (18.85,-9.);
+\fill [white] (7.,-1.3) -- (7.,-4.8) -- (10.,-4.8) -- (10.,-1.3) -- cycle;
+\draw [black] (4.,-3.) node[anchor=west,\myred]{$∃y$};
+\fill [white] (2.,-1.3) -- (2.,-4.8) -- (5.,-4.8) -- (5.,-1.3) -- cycle;
+\draw [black] (-1.,-3.) node[anchor=west,\myblue]{$∃x$};
+\end{tikzpicture}
+\end{array} 
+&~≝&\!\!\!
+\begin{array}{@{}l@{}}
+\begin{tikzpicture}[x=1mm,y=1mm,scale=1.]
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,0.) -- (1.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,0.) -- (18.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,0.) -- (8.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,0.) -- (16.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-5.) -- (1.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-5.) -- (18.85,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,-5.) -- (8.15,0.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,-5.) -- (16.85,0.);
+\draw [line width = 0.5mm, white] (10.,0.) -- (10.,-5.);
+\draw [line width = 0.5mm, white] (15.,0.) -- (15.,-5.);
+\fill [black!15] (10.,0.) -- (10.,-5.) -- (15.,-5.) -- (15.,0.) -- cycle;
+\draw [black] (12.5,-3.) node{\smash{$\ml[t]{p}$}};
+\draw [line width = 0.5mm, white] (10.,-5.) -- (10.,-5.);
+\draw [line width = 0.5mm, white] (15.,-5.) -- (15.,-5.);
+\fill [black!15] (10.,-5.) -- (10.,-5.) -- (15.,-5.) -- (15.,-5.) -- cycle;
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-5.) -- (1.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-5.) -- (18.85,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,-5.) -- (8.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,-5.) -- (16.85,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (1.15,-6.) -- (1.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (18.85,-6.) -- (18.85,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (8.15,-6.) -- (8.15,-5.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (16.85,-6.) -- (16.85,-5.);
+\draw [line width = 0.5mm, white] (10.,-5.) -- (10.,-6.);
+\draw [line width = 0.5mm, white] (15.,-5.) -- (15.,-6.);
+\fill [black!15] (10.,-5.) -- (10.,-6.) -- (15.,-6.) -- (15.,-5.) -- cycle;
+\fill[fill=black!55] (1.,-10.) rectangle (19.,-6.);
+\draw [white] (1.,-8.) node[anchor=west]{\begin{tabular}{@{\hspace{-0.8mm}}l@{\hspace{-0.8mm}}}Swap $x$ and $y$\end{tabular}};
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (8.15,-10.) -- (8.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (16.85,-10.) -- (16.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-10.) -- (1.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (18.85,-10.) -- (18.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (8.15,-10.) -- (8.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (16.85,-10.) -- (16.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-10.) -- (1.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (18.85,-10.) -- (18.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (8.15,-10.) -- (8.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (16.85,-10.) -- (16.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-10.) -- (1.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (18.85,-10.) -- (18.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (8.15,-16.) -- (8.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myblue] (16.85,-16.) -- (16.85,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (1.15,-16.) -- (1.15,-10.);
+\draw [rounded corners = 0.8mm, line width =0.15mm, \myred] (18.85,-16.) -- (18.85,-10.);
+\draw [line width = 0.5mm, white] (10.,-10.) -- (10.,-16.);
+\draw [line width = 0.5mm, white] (15.,-10.) -- (15.,-16.);
+\fill [black!15] (10.,-10.) -- (10.,-16.) -- (15.,-16.) -- (15.,-10.) -- cycle;
+\draw [black] (12.5,-13.) node{\smash{$\ml[t]{p}$}};
+\fill [white] (7.,-11.3) -- (7.,-14.8) -- (10.,-14.8) -- (10.,-11.3) -- cycle;
+\draw [black] (4.,-13.) node[anchor=west,\myblue]{$∃x$};
+\fill [white] (0.,-11.3) -- (0.,-14.8) -- (3.,-14.8) -- (3.,-11.3) -- cycle;
+\draw [black] (-3.,-13.) node[anchor=west,\myred]{$∃y$};
+\fill [white] (7.,-1.3) -- (7.,-4.8) -- (10.,-4.8) -- (10.,-1.3) -- cycle;
+\draw [black] (4.,-3.) node[anchor=west,\myred]{$∃y$};
+\fill [white] (0.,-1.3) -- (0.,-4.8) -- (3.,-4.8) -- (3.,-1.3) -- cycle;
+\draw [black] (-3.,-3.) node[anchor=west,\myblue]{$∃x$};
+\end{tikzpicture}
+\end{array}
+\end{array}$
+\end{center}
+
+\subsection{Proof rules for diagrams}\label{sect:formalisation_proofrules}
+
+There are two pertinent questions to be asked of a given ribbon diagram. The first question is: is it a valid proof? This subsection develops a \emph{provability} judgement to answer this. The second question -- if this ribbon diagram \emph{is} deemed valid, what does it prove? -- is addressed in the next subsection.
+
+\begin{figure}[t]
+\newcommand{\myscale}[1]{\scalebox{1}{#1}}
+\begin{mathpar}
+\inferrule[Ribbon]
+{ }{\Prov{\rm cel} P : P → P}
+\and
+\inferrule[Basic]
+{\prov[SL]\{\assn P\}\,c\,\{\assn Q\}}
+{\Prov{\rm cel} \basicstep{P}{c}{Q} : P → Q}
+\and
+\inferrule[Exists]
+{\Prov{\rm dia} D : P → Q}
+{\Prov{\rm cel} \existsbox{x}{D} \,:\! \existsbox{x}{P} \,→\! \existsbox{x}{Q}}
+\vspace{-8mm}\\
+\inferrule[Choice]
+{\Prov{\rm dia} D : P → Q \\\\ \Prov{\rm dia} E : P → Q}
+{\Prov{\rm cel} \choicedia{P}{D}{E}{Q} : P → Q}
+\and
+\inferrule[Loop]
+{\Prov{\rm dia} D : P → P }
+{\Prov{\rm cel} \loopdia{P}{D}{P} : P → P }
+\and
+\begin{minipage}{40mm}
+\begin{mathpar}
+\inferrule[Row]{\Prov{\rm cel} γ : P → Q \\ \WR(γ) ∩ \RD(F) = ∅}{\Prov{\rm row} (γ,F) : P ⊗ F → Q ⊗ F}
+\and 
+\inferrule[Main]
+{\mbox{$\begin{array}{@{}l@{}}∀i≤k．\Prov{\rm row} ρ_i: P_i → P_{i+1}\end{array}$}}
+{\Prov{\rm dia} [ρ_0,\dots,ρ_k] : P_0 → P_{k+1}}
+\end{mathpar}
+\end{minipage}
+\end{mathpar}
+\vspace{-7mm}
+\caption{Proof rules for stratified ribbon diagrams}
+\label{fig:rasterised_proof_rules}
+\end{figure}
+
+The rules given in Fig.~\ref{fig:rasterised_proof_rules} define provability judgements for cells ($\Prov{\rm cel}$), for rows ($\Prov{\rm row}$) and for diagrams ($\Prov{\rm dia}$). Each judgement ascribes a type, which comprises the top and bottom interfaces of that object.
+
+The {\sc Row} and {\sc Main} rules recall Hoare logic's sequencing rule and separation logic's frame rule. They embody the `locally checkable' nature of ribbon proofs: that the entire diagram is valid if each row is valid in isolation, and that a row is valid if its active cell is valid and writes no program variable that is read elsewhere in the row.
+
+The {\sc Basic} rule corresponds to an ordinary separation logic judgement $\prov[SL]\{p\}\,c\,\{q\}$. This judgement may be arbitrarily complex, so a ribbon diagram may be no easier to check than a traditional proof outline. This is intentional. Our formalisation \emph{allows} $p$ and $q$ to be minimised, by framing common fragments away, but does not \emph{demand} this. The command $c$ \emph{can} be reduced to $\Skip$ or some primitive command, but this may not be desirable if one requires only a high-level overview proof. A ribbon diagram can thus be viewed as a flexible combination of diagrammatic and traditional proofs, with the {\sc Basic} rule as the interface between these two levels.
+
+We remark that these proof rules provide only limited mechanisms for building new diagrams from old. Diagrams can be wrapped in existential boxes, or put inside choice or loop diagrams, but not stacked vertically or placed side by side. One can define operations for composing elements of {\sf Diagram} in sequence or in parallel, and hence additional proof rules for diagrams so composed. The process is straightforward, and described in Wickerson's PhD dissertation~\cite{wickerson13}.
+
+\subsection{Semantics of diagrams}\label{sect:formalisation_semantics}
+
+\begin{figure}[t] 
+\begin{mathpar}
+\begin{array}[t]{@{}l@{}}\COM [(γ_0,F_0), \dots, (γ_k,F_k)] {}\\~~~~~{} = \COM γ_0 \mathbin{\code{;}} \cdots \mathbin{\code{;}} \COM γ_k\end{array}
+\hspace{-6mm}\and
+\COM P ~=~ \Skip
+\hspace{-6mm}\and
+\COM \existsbox{x}{D} ~= \COM {D}
+\vspace{-5mm}\\
+\COM \basicstep{P}{c}{Q} ~=~ c
+\and
+\COM \loopdia{P}{D}{Q} ~=~ \mathop{\code{loop}} (\COM {D})
+\and
+\raisebox{2mm}{\ensuremath{\COM \choicedia{P}{D}{E}{Q} ~=~ \begin{array}[t]{@{}l@{}}(\COM {D}) \\ \mathbin{\code{or}} (\COM {E})\end{array}}}
+\end{mathpar}
+\vspace{-5mm}
+\caption{Extracting a command from a stratified diagram}
+\label{fig:com_function}
+\end{figure}
+
+A stratified ribbon diagram denotes a Hoare triple. The pre- and postconditions of this triple are the assertions represented by the diagram's top and bottom interfaces. The command being proved is extracted by composing the labels on all of the proof steps in top-to-bottom order. Figure~\ref{fig:com_function} defines the function responsible for this extraction. We hence obtain the following soundness result for ribbon proofs.
+
+\begin{theorem}[Soundness -- stratified diagrams]\label{thm:soundness_rasterised} Separation logic can encode any provable ribbon diagram.
+\begin{eqnarray*}
+\Prov{\rm dia} D:P→Q &⟹& \prov[SL]\{ \assn P \}\,\COM {D}\,\{ \assn Q \}.
+\end{eqnarray*}
+\end{theorem}
+\begin{proof}
+\renewcommand{\squareforqed}{\hbox{\rlap{$\isabelle$}$\isabelle$}}
+By mutual rule induction on $\Prov{\rm cel}$, $\Prov{\rm row}$, and $\Prov{\rm dia}$.\qed
+\end{proof}
+
+\noindent Ribbon diagrams are trivially complete, because the {\sc Basic} rule can be invoked right at the root of the proof tree. In fact, ribbon diagrams remain complete even when the {\sc Basic} rule can occur only immediately beneath an axiom or the rule of consequence.
+
+\begin{theorem}[Completeness -- stratified diagrams]\label{thm:completeness} A strengthened ribbon proof system in which the {\sc Basic} rule is replaced by
+\[
+\small
+\inferrule
+{(\assn P,c,\assn Q)∈{\sf Axioms}}
+{\Prov{\rm cel} \basicstep{P}{c}{Q} : P → Q}
+\hspace{5mm}\text{\normalsize and}\hspace{5mm}
+\inferrule
+{\assn P ⇒ \assn Q}
+{\Prov{\rm cel} \basicstep{P}{{\mbox{\upshape\Skip}}}{Q} : P → Q}
+\]
+can encode any separation logic proof. 
+\begin{eqnarray*}
+\prov[SL]\{p\}\,c\,\{q\} &⟹& 
+∃D,P,Q．c \!∈\! \COM D ∧ p \!=\! \assn P ∧ q \!=\! \assn Q ∧ \Prov{\rm dia} D : P\!→\!Q
+\end{eqnarray*}
+\end{theorem}
+\begin{proof}
+By rule induction on $\prov[SL]$.\qed
+\end{proof}
+
+\noindent The main problem with the formalisation given in this section is that it sacrifices much of the flexibility we expect in our ribbon diagrams. It is often sound to tweak the layout of a diagram by sliding steps up or down or reordering ribbons, but by thinking of our diagrams as sliced into a sequence of rows, we rule out \emph{all} such manoeuvres.
+
+\section{Graphical formalisation}\label{sect:v_a_r}
+
+We now give an alternative formalisation, in which diagrams are represented not as a sequence of rows, but as graphs. 
+
+Our `graphical' diagrams are more flexible than their `stratified' cousins, but extra precautions must be taken to ensure soundness. The core difficulty is the side-condition on the frame rule: that the command writes no program variable in the frame. With stratification, the frame is clearly delimited, so this condition is easily checked. Without it, this check would become more global: a command may affect a ribbon that appears far above or below itself in a laid-out diagram. Our simple solution is to require henceforth that the frame rule has no side-condition. This requirement could be met by abolishing program variables altogether, leaving only the heap and numerical constants. A more practical alternative, explored later in this section, is to use the \emph{variables-as-resource} paradigm~\cite{bornat+06}.
+
+Our graphs are nested, directed, acyclic hypergraphs. Ribbons correspond to nodes, and basic steps to hyperedges. Existential boxes are represented as single nodes that contain a nested graph. Likewise, choice diagrams and loop diagrams are represented by single hyperedges that contain, respectively, one or two nested graphs.
+
+\newcommand{\filledarrowright}{\mathrel{{-}\!\raisebox{0.4mm}{\scalebox{.5}{$\blacktriangleright$}}}}
+
+\begin{definition}[Graphical diagrams, assertion-gadgets and command-gadgets]\label{defn:diagrams}
+Let $\mathcal V$ be an infinite set of node-identifiers. We define a language of \emph{assertion-gadgets}, \emph{command-gadgets} and \emph{graphical diagrams} as follows.
+\vspace{-3mm}
+\begin{center}
+\small
+${\sf AsnGadget} ~=~ \{A ::= \closedribbon{p} \mid \closedexistsbox{x}{\,G\,}\}
+~~~~~~~~
+{\sf ComGadget} ~=~ \{C ::= \nakedbasicstep{c} \mid \nakedchoicedia{G}{G} \mid \nakedloopdia{G}\,\}$
+\\
+${\sf GDiagram} ~=~ {\begin{array}[t]{@{}l@{}l@{}}\{G \mid {} & \text{$Λ_G ∈ V_G → {\sf AsnGadget}$, $E_G ⊆_{\rm fin} \pow(V_G) × {\sf ComGadget} × \pow(V_G)$,} \\ & \text{$V_G ⊆_{\rm fin} \mathcal V$, $\acyclic(G)$ and $\linear(G)$, where $G = (V_G,Λ_G,E_G)$}\}\end{array}}$
+\end{center}
+The definitions are mutually recursive, and are well-formed because the definienda (left-hand sides) appear only positively in the definientia (right-hand sides).\footnote{This is true even for the occurrence of {\sf ComGadget} in the definiens of {\sf GDiagram}, because the set in which it appears is finite.} The first of these equations defines an assertion-gadget $A ∈ {\sf AsnGadget}$ to be either a ribbon or an existential box. The second defines a command-gadget $C ∈ {\sf ComGadget}$ to be either a basic step, a choice diagram, or a loop diagram. The third equation defines a graphical diagram $G ∈ {\sf GDiagram}$ to be a triple $(V_G,Λ_G,E_G)$ that comprises:
+\begin{itemize} 
+\item a finite set $V_G ⊆_{\rm fin} \mathcal V$ of \emph{node identifiers};
+\item a \emph{labelling} $Λ_G : V_G → {\sf AsnGadget}$ that associates each node identifier with an assertion-gadget; and 
+\item a finite set $E_G ⊆_{\rm fin} \pow(V_G) × {\sf ComGadget} × \pow(V_G)$ of \emph{hyperedges} $(\bold v,C,\bold w)$, each comprising a set $\bold v$ of tail identifiers, a command-gadget $C$, and a set $\bold w$ of head identifiers,
+\end{itemize} 
+and which satisfies the following two properties.
+\begin{description}
+\item[{\sc Acyclicity:}] Let us write $v \filledarrowright w$ if $v∈\bold v$ and $w∈\bold w$ for some $(\bold v,C,\bold w)∈E_G$. Then define $\acyclic(G)$ to hold iff the transitive closure of $\filledarrowright$ is irreflexive.
+\item[{\sc Linearity:}] Define $\linear(G)$ to hold iff the hyperedges in $E_G$ have no common heads and no common tails. (This forbids the duplication or merging of ribbons, in accordance with $p ⇒ p*p$ and $p*p ⇒ p$ being invalid in separation logic.)
+\end{description}
+\end{definition}
+
+\begin{remark}
+We could represent our diagrams by a single graph, with dedicated `parent' edges to simulate the nesting hierarchy. However, mindful of our \emph{Isabelle} formalisation, and that ``reasoning about graphs [\dots] can be a real hassle in HOL-based theorem provers''~\cite{wu+11}, we prefer to use an algebraic datatype to depict the hierarchy.
+\end{remark}
+
+\noindent Figure~\ref{fig:listrev_graph} presents a term of {\sf GDiagram} that corresponds to a fragment of the picture in Fig.~\ref{fig:listrev_proof_ribbon}. Unlike Fig.~\ref{fig:listrev_fragment_stratified}, this representation does not impose a strict ordering between the `\code{y:=x}' and `\code{x:=z}' instructions. As such, this proof is \emph{invalid}; the figure serves merely to demonstrate how the graphical syntax is used. 
+
+The problem is that the graph does not take into account dependencies on program variables. To address this, let us remove the side-condition on the frame rule in our axiomatisation $\prov[SL]$ of separation logic (Fig.~\ref{fig:prov_com}). The new proof system thus obtained shall be written as $\Prov[SL]{*}$. We shall now develop proof rules for graphical diagrams, and show them to be sound and complete with respect to $\Prov[SL]{*}$. Section~\ref{sect:using_var} describes the application of ribbon proofs to variables-as-resource, which is one instance of $\Prov[SL]{*}$.
+
+\subsection{Proof rules for graphical diagrams}
+
+Proof rules for graphical diagrams, command-gadgets and assertion-gadgets are defined in Fig.~\ref{fig:proof_rules}, which refers to the $\TOP$ and $\BOT$ functions defined below. The judgement $\Prov{\rm gra} G : P → Q$ means that the diagram $G$, precondition $P$, and postcondition $Q$ form a valid proof. The interfaces $P$ and $Q$ are always equal to $\TOP(G)$ and $\BOT(G)$ respectively, so we sometimes omit them. The judgements for command-gadgets and assertion-gadgets are similar, the latter without interfaces. 
+
+\begin{definition}[Top and bottom interfaces]\label{defn:top_bot}
+These functions extract interfaces from assertion-gadgets and from diagrams. For assertion-gadgets:
+\begin{mathpar}
+\TOP \closedribbon p = \ribbon p\!\!\!
+\and
+\BOT \closedribbon p = \ribbon p\!\!\!
+\and
+\TOP \closedexistsbox{x}{G} = \existsbox{x}{\TOP G}\!\!\!
+\and
+\BOT \closedexistsbox{x}{G} = \existsbox{x}{\BOT G}\,.
+\end{mathpar} 
+For diagrams:
+\begin{mathpar}
+\TOP(G) ~=~ ⊗_{v∈\initials G}\TOP(Λ_G\,v)
+\and
+\BOT(G) ~=~ ⊗_{v∈\terminals G}\BOT(Λ_G\,v)
+\end{mathpar}
+where $\initials(G) = V_G \setminus \bigcup_{(\_,\_,\bold v)∈E_G} \bold v$ and $\terminals(G) = V_G \setminus \bigcup_{(\bold v,\_,\_)∈E_G} \bold v$.
+\end{definition}
+
+\begin{figure}[t]
+\begin{mathpar}
+\inferrule[GRibbon]
+{ }{\Prov{\rm asn} \closedribbon{p} %: \ribbon{p} → \ribbon{p}
+}
+\and
+\inferrule[GBasic]
+{\Prov[SL]{*}\{\assn P\}\,c\,\{\assn Q\}}
+{
+\Prov{\rm com} \nakedbasicstep{c} : P → Q
+}
+\and
+\inferrule[GExists]
+{\Prov{\rm gra} G %: P → Q
+}
+{\Prov{\rm asn} \closedexistsbox{x}{G} %: \existsbox{x}{P} → \existsbox{x}{Q}
+}
+\and
+\inferrule[GChoice]
+{\Prov{\rm gra} G_1 : P → Q \\\\ \Prov{\rm gra} G_2 : P → Q}
+{\Prov{\rm com} \nakedchoicedia{G_1}{G_2} : P → Q}
+\vspace{-5mm}\\
+\inferrule[GLoop]
+{\Prov{\rm gra} G : P → P}
+{\Prov{\rm com} \nakedloopdia[9]{G} : P → P }
+\hspace{-5mm}\and
+\inferrule[GMain]
+{∀v∈V_G．\Prov{\rm asn} Λ_G\,v %: \TOP (Λ_G\,v) → \BOT (Λ_G\,v) 
+\\\\
+∀(\bold v,C,\bold w)∈E_G．\Prov{\rm com} C : ⊗_{v∈\bold v}\BOT(Λ_G\,v) → ⊗_{w∈\bold w}\TOP(Λ_G\,w)
+}
+{\Prov{\rm gra} G : \TOP(G) → \BOT(G)}
+\end{mathpar}
+\vspace{-5mm}
+\caption{Proof rules for graphical diagrams}
+\label{fig:proof_rules}
+\end{figure}
+
+\noindent As was the case for stratified diagrams, one can define operations for composing elements of {\sf GDiagram} in sequence or parallel, and hence additional proof rules for graphical diagrams so composed~\cite{wickerson13}.
+
+\subsection{Semantics of graphical diagrams}
+
+Since graphical diagrams have a parallel nature, but our language is only sequential, it follows that each graphical diagram proves not a single command, but a set of commands, each one a linear extension of the partial order imposed by the diagram. The $\mathit{coms}$ function defined in Fig.~\ref{fig:coms_function} is responsible for extracting this set from a given diagram. Each command is obtained by picking an ordering of command- and assertion-gadgets that is compatible with the partial order defined by the edges (this is the purpose of the $\lin$ function defined below), then recursively extracting a command from each gadget and sequentially composing the results.
+
+\begin{definition}[Linear extensions]
+For a diagram $G$, we define $\lin G$ as the set of all lists $[x_0,\dots,x_{k-1}]$ of {\sf AsnGadget}s and {\sf ComGadget}s, for which there exists a bijection $π: k → V_G ∪ E_G$ that satisfies, for all $(\bold v,C,\bold w)∈E_G$: 
+\begin{mathpar}
+∀v∈\bold v．π^{-1}(v) < π^{-1}(\bold v,C,\bold w)
+\and
+∀w∈\bold w．π^{-1}(\bold v,C,\bold w) < π^{-1}(w)
+\end{mathpar}
+and where, for all $i<k$: $x_i = Λ_G(v)$ if $π(i)=v$, and $x_i = C$ if $π(i) = (\bold v,C,\bold w)$.
+% \[
+% x_i = \begin{cases} Λ_G(v) & \text{if $π(i)=v$} \\ C & \text{if $π(i) = (\bold v,C,\bold w)$}. \end{cases}
+% \]
+\end{definition}
+
+\noindent By {\sc Acyclicity}, every diagram admits at least one linear extension.
+
+\begin{figure}[t]
+\begin{mathpar}
+\coms(G) ~=~ \{c_0\Semicolon\cdots\Semicolon c_{k-1} \Semicolon \Skip \mid ∃[x_0,\dots,x_{k-1}] ∈ \lin G．∀i<k．c_i ∈ \coms x_i \}
+\and
+\coms {\closedribbon{p}} ~=~ \{\Skip\}
+\and
+\coms {\closedexistsbox{x}{G}} ~=~ \coms{G}
+\and
+\coms {\nakedbasicstep{c}} ~=~ \{c\}
+\and
+\coms {\nakedchoicedia{G_1}{G_2}} ~=~ \begin{array}{@{}l@{}l@{}} \{ & c_1 \mathbin{\code{or}} c_2 \mid \\ & c_1 ∈ \coms G_1, \\ & c_2 ∈ \coms G_2\} \end{array}
+\and
+\coms {\nakedloopdia{G}} ~=~ \{\mathop{\code{loop}} c \mid c ∈ \coms G\}
+\end{mathpar}
+\vspace{-2mm}
+\caption{Extracting commands from a diagram}
+\label{fig:coms_function}
+\end{figure}
+
+\begin{theorem}[Soundness -- graphical diagrams]\label{thm:soundness3}
+Separation logic without the side-condition on the frame rule can encode any provable ribbon diagram:
+\begin{eqnarray*}
+\Prov{\rm gra} G:P→Q &⟹& ∀c∈\coms G．\Prov[SL]{*} \{\assn P\}\,c\,\{\assn Q\}.
+\end{eqnarray*}
+\end{theorem}
+\begin{proof}
+\renewcommand{\squareforqed}{\hbox{\rlap{$\isabelle$}$\isabelle$}}
+By mutual induction on $\Prov{\rm gra}$, $\Prov{\rm com}$ and $\Prov{\rm dia}$. See~\cite{wickerson13} for details.\qed
+\end{proof}
+
+
+\begin{theorem}[Completeness -- graphical diagrams]\label{thm:completeness} A strengthened ribbon proof system in which the {\sc GBasic} rule is replaced by
+\begin{center}
+\small $\inferrule
+{(\assn P,c,\assn Q)∈{\sf Axioms}}
+{
+\Prov{\rm com} \nakedbasicstep{c} : P → Q
+}$
+\hspace{5mm}\text{\normalsize and}\hspace{5mm}
+$\inferrule
+{\assn P ⇒ \assn Q}
+{
+\Prov{\rm com} \nakedbasicstep{\mbox{\rm \Skip}} : P → Q
+}$
+\end{center}
+can encode any proof in separation logic without the side-condition on the frame rule. 
+\begin{eqnarray*}
+\Prov[SL]{*}\{p\}\,c\,\{q\} &\,⟹\,& ∃G,P,Q．c\!∈\!\coms G ∧ p\!=\!\assn P ∧ q\!=\!\assn Q ∧ \Prov{\rm gra} G : P\!→\!Q
+\end{eqnarray*}
+\end{theorem}
+\begin{proof}
+By rule induction on $\Prov[SL]{*}$.\qed
+\end{proof}
+
+\begin{figure}[tp]
+\centering
+\input{listrev_varsasres}
+\caption{A ribbon proof of list reverse using variables-as-resource}
+\label{fig:listrev_proof_var}
+\end{figure}
+
+\subsection{Using variables-as-resource}\label{sect:using_var}
+
+The variables-as-resource paradigm~\cite{bornat+06} treats program variables a little like separation logic treats heap cells. Each program variable $x$ is associated with a piece of resource, all of which (written $\mathit{Own}_1(x)$) must be held to write to $x$, and some of which ($\mathit{Own}_{π}(x)$ for some $0<π≤1$) must be held to read it. This treatment replaces the use of $\RD$ and $\WR$ sets in Fig.~\ref{fig:prov_com}. The variables-as-resource proof system is an instance of separation logic without the side-condition on the frame rule, and can be obtained from $\Prov[SL]{*}$ simply by selecting an appropriate {\sf Axioms} set.
+
+Figure~\ref{fig:listrev_proof_var} exhibits a ribbon proof, conducted using variables-as-resource, of the list-reversal program from Sect.~\ref{sect:informal_development}. Variables-as-resource dictates that every assertion in the proof is accompanied by one $\mathit{Own}$ predicate per program variable it mentions. For instance, the precondition $\List{α_0}{\code{x}}$ is paired with some of \code{x}'s resource. The extra shading is merely syntactic sugar; for instance:
+\[
+\textstyle
+\colorbox{\varcolor}{\vphantom{$\code{x}↦i,\code{y}$}\smash{$\code{x}, \frac12\code{y}$}} \colorbox{\ribboncolor}{$\code{x}↦i,\code{y}$} ~~~\eqdef~~~ \colorbox{\ribboncolor}{$\mathit{Own}_{1}(\code{x}) * \mathit{Own}_{.5}(\code{y}) * \code{x}↦i,\code{y}$}.
+\]
+The other preconditions -- the resources associated with \code{y} and \code{z} -- entitle the program to write to these program variables in due course. Note that at the entry to the while loop, part of \code{x}'s resource is required in order to carry out the test of whether \code{x} is zero. At various points in the proof, variable resources are split or combined, but their total is always conserved. 
+
+Figure~\ref{fig:listrev_proof_var} introduces a couple of novel visual features: ribbons may pass `underneath' basic steps to reduce the need for twisting (see the three `Choose~\dots' steps), and horizontal space is conserved by writing some assertions sideways. The diagram can be laid out in several ways, unconstrained by the stratification strategy of the previous section, so there exists the potential to use the same diagram to justify several variations of a program. Recall the shortcoming of Fig.~\ref{fig:listrev_proof_ribbon}: that it misleadingly suggested that `\code{y:=x}' and `\code{x:=z}' could be safely permuted. Figure~\ref{fig:listrev_proof_var} forbids this by inserting a ribbon between them labelled `\code{x}'. On the other hand, both figures agree that the `Reassociate $i$' step can be safely manoeuvred up or down a little. 
+
+\subsection{Stratified or graphical?}
+We have presented two alternative formalisations of ribbon diagrams. 
+
+The stratified version supports traditional separation logic (with its side-condition on the frame rule), and the formalisation is simpler, but its proof objects are less manoeuvrable. Concrete pictures should be drawn carefully so they can be successfully parsed into a sequence of rows. 
+
+The graphical version works with any separation logic whose frame rule has no side-conditions, variables-as-resource being one example. Another example is Views~\cite{dinsdale-young+13}, which can encode a wide variety of program logics. The use of variables-as-resource requires much splitting, distributing and re-combining of the resources associated with each program variable, and this is perhaps an unnecessary burden if one seeks merely to present a proof of a particular program. (Figure~\ref{fig:listrev_proof_var} is significantly larger and fiddlier than Fig.~\ref{fig:listrev_proof_ribbon}, which does not use variables-as-resource.) However, one seeking to explore potential optimisations, or to analyse the dependencies between various components of a program, should consider investing in variables-as-resource.
+
+\section{Tool support}\label{sect:tool}
+
+Several properties of ribbon proofs make them a potentially appealing partner for automatic verification tools based on separation logic, such as \emph{Bedrock}~\cite{chlipala11} and \emph{VeriFast}~\cite{jacobs+11-b}. Because ribbon proofs can be decomposed both horizontally and vertically, into independent proof blocks, they may suggest more opportunities for modular verification. One problem with automation is that users can lose track of their position in the proof: ribbons could provide an interface to the proof as it develops. Moreover, when automation fails, partial ribbon proofs could be used to view and guide the process manually. Ribbon proofs also shift the bureaucracy of rearranging assertions (in accordance with the associativity and commutativity of $*$) from the individual proof steps into the surrounding graphical structure, where it is more naturally handled.  
+
+To demonstrate the potential of ribbon proofs to complement automation, we have developed a prototype tool whose inputs are a ribbon diagram and a collection of small \emph{Isabelle} proof scripts, one for each basic step. Our tool uses our \emph{Isabelle} formalisation of Thm.~\ref{thm:soundness_rasterised} and the proof rules of Fig.~\ref{fig:rasterised_proof_rules} to assemble the proof scripts for the individual commands into a single script that verifies the entire diagram.
+
+Supplied with appropriate proof rules for primitive commands and a collection of axioms about lists, our tool has successfully verified a number of small ribbon proofs, among them Fig.~\ref{fig:listrev_proof_ribbon}. All of the proof scripts for the individual basic steps are small, and they can often be discharged without manual assistance. Individual proof scripts can be checked in any order -- even concurrently. This feature recalls recent developments in theorem proving that allow proofs to be processed in a non-serial manner~\cite{wenzel12}.
+
+The input to the tool is a graphical ribbon diagram, following Defn.~\ref{defn:diagrams}. Our tool begins by converting this graphical diagram into a stratified diagram, resolving any ambiguity about the node order by reference to the order of their input. (By taking this approach, we avoid having to invest in variables-as-resource.) It outputs a pictorial representation of the graph it has verified, laid out using the \emph{dot} tool in the \emph{Graphviz} library. Clicking on any basic step loads the corresponding proof script, which can then be edited. When a step's proof is admitted by \emph{Isabelle}, the corresponding node in the pictorial representation is marked with a tick; a failed or incomplete proof is marked with a cross. The picture below illustrates this on a snippet of Fig.~\ref{fig:listrev_graph}, and also shows the proof script for one of the steps.
+\begin{center}
+\includegraphics[width=85mm]{listrev_graph_mini.pdf}
+\end{center}
+In the current prototype, the user must supply the input in textual form, but in the future, we intend to enable direct interaction with the graphical representation, perhaps through a framework for diagrammatic reasoning such as \emph{Diabelli}~\cite{urbas+12}. We envisage an interactive graphical interface for exploring and modifying proofs, that allows steps to be collapsed or expanded to the desired granularity -- whether that is the fine details of every rule and axiom, or a coarse bird's-eye view of the overall structure of the proof.
+
+The ribbon proofs in this paper have all been laid out manually (and we are preparing a public release of the {\LaTeX} macros we use to do this) but there is scope for additional tool support for discovering pleasing layouts automatically.
+
+\section{Related and further work}\label{sect:future}
+
+Ribbon proofs are more than just a pretty syntax; they are a sound and complete proof system. Proof outlines have previously been promoted from a notational device to a formal system by Schneider~\cite{schneider97}, and by Ashcroft, who remarks that ``the essential property of [proof outlines] is that each piece of program appears \emph{once}''~\cite{ashcroft76}. Very roughly speaking, ribbon proofs extend this property to each piece of assertion.
+
+\begin{figure}[t]
+\centering
+\subfloat[ ]{
+\label{fig:alternative_frame1}
+\centering
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{@{}l@{}}
+\ass{\code{x}↦0 * \code{y}↦0 * \code{z}↦0} \\
+~~\code{[x]:=1;} \\
+\ass{\code{x}↦1 * \code{y}↦0 * \code{z}↦0} \\
+\hspace{-1.2pt}~~$\left.\begin{tabular}{@{}l@{~~}l@{}}
+\ass{\code{y}↦0 * \code{z}↦0} \\
+~~\code{[y]:=1;} \\
+\ass{\code{y}↦1 * \code{z}↦0} \\
+~~\code{[z]:=1;} \\
+\ass{\code{y}↦1 * \code{z}↦1}
+\end{tabular}~~\right]\hspace{-5.5pt}\textrm{-}$ {\renewcommand{\arraystretch}{1}\begin{tabular}{@{}l@{}}frame\\ $\code{x}↦1$\end{tabular}} \\
+\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦1}
+\end{tabular}
+}
+\hspace{2cm}
+\subfloat[ ]{
+\label{fig:alternative_frame2}
+\centering
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{@{}l@{}}
+\ass{\code{x}↦0 * \code{y}↦0 * \code{z}↦0} \\
+\hspace{-1.2pt}~~$\left.\begin{tabular}{@{}l@{~~}l@{}}
+\ass{\code{x}↦0 * \code{y}↦0} \\
+~~\code{[x]:=1;} \\
+\ass{\code{x}↦1 * \code{y}↦0} \\
+~~\code{[y]:=1;} \\
+\ass{\code{x}↦1 * \code{y}↦1}
+\end{tabular}~~\right]\hspace{-5.5pt}\textrm{-}$ {\renewcommand{\arraystretch}{1}\begin{tabular}{@{}l@{}}frame\\$\code{z}↦0$\end{tabular}} \\
+\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦0} \\
+~~\code{[z]:=1;} \\
+\ass{\code{x}↦1 * \code{y}↦1 * \code{z}↦1}
+\end{tabular}
+}
+\caption{Two alternatives to the proof outline in Fig.~\ref{fig:proofoutline}}
+\label{fig:alternative_frames}
+\end{figure}
+
+When constructing a proof outline, one can reduce the repetition by `framing off' state that is unused for several instructions. For instance, Fig.~\ref{fig:alternative_frame1} depicts one variation of Fig.~\ref{fig:proofoutline} obtained by framing off \code{x} during the latter two instructions; another option is to frame off \code{z} during the first two (Fig.~\ref{fig:alternative_frame2}). It is unsatisfactory that there are several different proof outlines for what is essentially the same proof. More pragmatically, deciding among these options can be difficult with large proof outlines. Happily, each of these options yields the same ribbon proof (Fig.~\ref{fig:assignment_ribbonproof}). We note a parallel here with \emph{proof nets}~\cite{girard87}, which are a graphical mechanism for unifying proofs in linear logic that differ only in uninteresting ways, such as the order of rule applications. 
+
+The graphical structures in Defn.~\ref{defn:diagrams} resemble Milner's \emph{bigraphs}~\cite{milner09}. Assertions and commands are nodes, the deductions of the proof form the \emph{link graph}, and existential boxes, choices and loops form the \emph{place graph}. In fact, our diagrams correspond to \emph{binding} bigraphs, in which links may not cross place boundaries. Relaxing this restriction may enable a model of the `dynamic' scoping of existential boxes exhibited in Fig.~\ref{fig:dynamic_scoping}, which our current formalisation dismisses as a purely syntactic artefact.
+
+Ribbon proofs can be understood as objects of a symmetric monoidal category, and our pictures as \emph{string diagrams}, which are widely used as graphical languages for such categories~\cite{selinger11}. In future work we intend to investigate this categorical semantics of ribbon proofs; in particular, the use of \emph{traces}~\cite{joyal+96} to model the loop construction depicted in Fig.~\ref{fig:ifwhilepic}a, and coproducts to model if-statements and existential boxes.
+
+Another avenue for future work is the connection between ribbon proofs and Raza et al.'s \emph{labelled separation logic}~\cite{raza+09}. Labelled separation logic seeks to justify compiler reorderings by analysing the dependencies between program statements, and checking that these are not violated. The dependencies are detected by first labelling each component of each assertion with the commands that access it, and then propagating these labels through program proofs. Raza's labels recall the \emph{columns} in our ribbon diagrams: each ribbon and each command occupies one or more columns of a diagram, and commands that occupy common columns (modulo twisting) may share a dependency.
+
+\begin{figure}[tp]
+\centering
+\begin{minipage}{40mm}
+\subfloat[Code for `producer' thread]{
+\begin{minipage}{40mm}
+\begin{tabular}{l}
+\code{while true \{} \\
+\code{~x:=new();} \\
+\code{~with buff when !full \{}\\
+\code{~~full:=true; }\\
+\code{~~ c:=x; }\\
+\code{~\}} \\
+\code{\}}
+\end{tabular}
+\end{minipage}
+} \\[4mm]
+\subfloat[Code for `consumer' thread]{
+\begin{minipage}{40mm}
+\begin{tabular}{l}
+\code{while true \{} \\
+\code{~with buff when full \{} \\
+\code{~~full:=false;} \\
+\code{~~y:=c;} \\
+\code{~\}}\\
+\code{~dispose(y);}\\
+\code{\}}
+\end{tabular}
+\end{minipage}
+}
+\end{minipage}
+~~~~~~~
+\subfloat[Ribbon proof for `consumer' thread (mock-up)]{
+\raisebox{2.5mm}{
+\begin{minipage}{72mm}
+\noindent\input{bufferproof}
+\vspace{-4mm}
+\end{minipage}
+\label{fig:buffer_proof}
+}
+}
+\caption{Concurrency example: a single-cell buffer}
+\label{fig:buffer}
+\end{figure}
+
+We have so far considered only sequential programs, but our proofs have a distinctly concurrent flavour. It may be possible to extend ribbon proofs to \emph{concurrent separation logic}~\cite{ohearn07} as follows.
+Figure~\ref{fig:buffer} gives a program (adapted from~\cite{ohearn07}) in which two threads communicate through a shared buffer at location \code{c}. The \emph{resource invariant} \mbox{$(\code{full} ∧ \code{c}↦\underscore)$} $∨$ \mbox{($¬\code{full} ∧ \emp)$} protected by the lock \code{buff} signifies that \code{c} is shared exactly when \code{full} is set. Figure~\ref{fig:buffer_proof} imagines a ribbon proof of the `consumer' thread. The resource invariant is initially in a protected ribbon, inaccessible to the thread (as suggested by the hatching). Upon entering the critical region, the ribbon becomes available, and upon leaving it, the resource invariant is re-established and the ribbon is inaccessible once again.
+
+Beyond concurrent separation logic, we intend to apply our system to more advanced separation logics. It has already aided the development of a logic for relaxed memory~\cite{bornat+12}; other candidates handle fine-grained concurrency~\cite{dinsdale-young+10-b,feng09,feng+07-a,vafeiadis+07}, dynamic threads~\cite{dodds+09}, storable locks~\cite{gotsman+07}, loadable modules~\cite{jacobs+11} and garbage collection~\cite{hur+11%,kapoor+11
+}. Increasingly complicated logics for increasingly complicated programming features make techniques for intuitive construction and clear presentation ever more crucial.
+
+\section{Conclusion}
+
+Ribbon proofs are an attractive and practical approach for constructing and presenting proofs in separation logic or any derivative thereof. They contain less redundancy than a proof outline, and express the intent of the proof more clearly. Each step of the proof can be checked locally, by focusing only on the relevant resources. They are useful pedagogically for explaining how a simple proof is constructed, but also scale to more complex programs (as demonstrated in~\cite{wickerson13}), and have aided the development of a separation logic for relaxed memory~\cite{bornat+12}. They show graphically the distribution of resource in a program, and in particular, which parts of a program operate on disjoint resources, and this may prove useful for exploring parallelisation opportunities.
+
+\paragraph{\bf Acknowledgements} Wickerson was supported by a DAAD postdoctoral scholarship and EPSRC grant F019394/1. Dodds was supported by EPSRC grants EP/H005633/1 and EP/F036345. Figure~\ref{fig:ifwhilepic} was drawn by Rasmus Petersen. We thank him, Nick Benton, Richard Bornat, Matko Botin\v{c}an, Daiva Naud\v{z}i\={u}nien\.{e}, Peter O'Hearn, Andy Pitts, Noam Rinetzky and the anonymous reviewers for suggestions and encouragement.
+
+
+\bibliographystyle{abbrv}
+\bibliography{esop}
+
+\end{document}
