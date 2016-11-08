@@ -1,6 +1,11 @@
 This repository contains source code for selected research papers by
 John Wickerson and coauthors:
 
+* John Wickerson, Mark Batty, Tyler Sorensen, and George
+  A. Constantinides, "Automatically Comparing Memory Consistency
+  Models", in *Proc. Principles of Programming Languages (POPL
+  '17)*, 2017.
+
 * Mark Batty, Alastair F. Donaldson, and John Wickerson, "Overhauling
   SC Atomics in C11 and OpenCL", in *Proc. Principles of Programming
   Languages (POPL '16)*, 2016.
