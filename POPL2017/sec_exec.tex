@@ -1,0 +1,472 @@
+\section{Executions}
+\label{sec:executions}
+
+The semantics of a program is a set of \emph{executions}. This section
+describes our formalisation of executions, both in general
+(\S\ref{sec:form_executions}) and specifically for C11, OpenCL, and
+PTX (\S\ref{sec:language-specific-executions}), and then
+explains how MCMs decide which executions are allowed
+(\S\ref{sec:c11_consistency}).
+
+Program executions are composed of \emph{events}, each representing
+the execution of a program instruction. Most existing MCM frameworks
+embed several pieces of information within each event, such as the
+location it accesses, the thread it belongs to, and the value it reads
+and/or writes (e.g.,~\cite{adve+90, alglave+10, batty+11, morisset+13,
+sarkar+09}). In our work, events are \emph{pure}, in Needham's
+sense~\cite{needham89}: they are given meaning simply by their
+membership of, for instance, the `read events' set, or the `same
+location' relation. This formulation brings three benefits. First, it
+means that we can easily build a hierarchy of executions to unify
+several levels of abstraction. For instance, starting with a top-level
+`execution' class, we can obtain a class of `C11 executions' just by
+adding extra fields such as `the set of events with acquire
+semantics'; we need not modify the type of events. Second, it means
+that the same events can appear (with different meanings) in two
+executions, thus reducing the total number of events needed in our
+search space. Third, we avoid the need to define (and therefore, in a
+bounded search query, set the number of) locations, threads, and
+values.
+
+\paragraph{Notation} Our MCMs are written in Alloy's modelling
+language, but in this paper we opt for more conventional set-theoretic
+notation. For a binary relation $r$, $\comp{r}$ is its complement,
+$r^{-1}$ is its inverse, $r^?$ is its reflexive closure, $r^+$ is its
+transitive closure, and $r^*$ is its reflexive, transitive
+closure. The $\spo$ predicate holds of binary relations that are
+acyclic and transitive, and $\equivalence(r,s)$ holds when $r$ is a
+subset of $s^2$, reflexive over $s$, symmetric, and transitive. We
+compose an $m$-ary relation $r_1$ with an $n$-ary relation
+$r_2$ (where $m,n\ge 1$) via
+$r_1\join r_2 \eqdef \{(x_1,\dots, x_{m-1},z_1,\dots, z_{n-1})\mid \exists
+y\ldotp (x_1,\dots, x_{m-1}, y)\in r_1 \wedge (y,z_1,\dots, z_{n-1})\in
+r_2\}$,
+and we lift a set to a subset of the identity relation via
+$\stor{s} \eqdef \{(e,e)\mid e\in s\}$. We write $\imm(r)$ for
+$r-(r\join r^+)$, and $s_1\ncap s_2$ for $s_1\cap s_2 = \emptyset$.
+
+\begin{figure}[t]
+\begin{tabular}{@{}l@{~}l@{~~~~~~~~}l}
+$E$ & $\subseteq \E$ & all events in the execution \\
+$R$, $W$ & $\subseteq \E$ & events that read (resp. write) a location \\
+$F$ & $\subseteq \E$ & fence events \\
+$nal$ & $\subseteq \E$ & events that access a non-atomic
+location \\
+$sb$ & $\subseteq \E^2$ & sequenced-before \\
+$ad$, $cd$, $dd$ & $\subseteq \E^2$ & address/control/data dependency \\
+$\sthd$, $sloc$ & $\subseteq \E^2$ & same thread, same location \\
+$rf$, $co$ & $\subseteq \E^2$ & reads-from, coherence order \\
+$rfe$ & $\subseteq \E^2$ & $\eqdef rf - sthd$
+\end{tabular}
+%\par\vspace*{0.5mm}\rule{\linewidth}{0.4pt}
+\begin{mathpar}
+\labelb{eq:basicexec:ev}~ R \cup W \cup F \cup nal \subseteq E
+\and
+\labelb{eq:basicexec:fences}~ (R\cup W) \ncap F
+\and
+\labelb{eq:basicexec:sbthd}~ sb \subseteq \sthd
+\and
+\labelb{eq:basicexec:sbspo}~ \spo(sb)
+\and
+\labelb{eq:basicexec:ad}~ ad \subseteq \stor{R}\join
+sb\join\stor{R\cup W}
+\and
+\labelb{eq:basicexec:dd}~ dd \subseteq \stor{R}\join sb\join\stor{W}
+\and
+\labelb{eq:basicexec:cd}~ cd \subseteq \stor{R}\join sb
+\and
+\labelb{eq:basicexec:thdequiv}~ \equivalence(\sthd, E)
+\and
+\labelb{eq:basicexec:locequiv}~ \equivalence(\sloc, R\cup W)
+\and
+\labelb{eq:basicexec:locnal}~ nal \join \sloc = nal
+\and
+\labelb{eq:rfdom}~ rf \subseteq (W \times R) \cap \sloc
+\and
+\labelb{eq:rfunique}~ rf \join rf^{-1} \subseteq \id
+\and
+\labelb{eq:cospo}~ \spo(co)
+\and
+\labelb{eq:cotot}~ co \cup co^{-1} = (W - nal)^2 \cap \sloc - \id 
+\end{mathpar}\par\vspace*{-2mm}
+\caption{Basic executions, $\Exec$}
+\label{fig:basic_exec}
+\end{figure}
+
+\subsection{Basic Executions}
+\label{sec:form_executions}
+Let $\E$ be a set of events. 
+
+\begin{definition}[Basic executions] 
+%
+The set $\Exec$ of basic executions comprises structures with fourteen
+fields, governed by well-formed\-ness constraints
+(Fig.~\ref{fig:basic_exec}). We write $f_X$ for the field $f$ of
+execution $X$, omitting the subscript when it is clear from the
+context. The constraints can be understood as follows. The subsets
+$R$, $W$, $F$, and $nal$ are all drawn from the events $E$ that appear
+in the execution~\refb{eq:basicexec:ev}. In particular,
+compound read-modify-write (RMW) events belong to \emph{both} $R$ and $W$.
+Fences are distinct from reads and writes~\refb{eq:basicexec:fences}.
+\emph{Sequenced before} is an intra-thread strict partial
+order~\refb{eq:basicexec:sbthd}~\refb{eq:basicexec:sbspo}. (We allow
+$sb$ within a thread to be partial because in C-like languages, the
+evaluation order of certain components, such as the operands of the
+"+"-operator, is not specified.) Address dependencies are either
+read-to-read or read-to-write~\refb{eq:basicexec:ad}, data
+dependencies are read-to-write~\refb{eq:basicexec:dd}, and control
+dependencies originate from reads~\refb{eq:basicexec:cd}. The $\sthd$
+relation forms an equivalence among all
+events~\refb{eq:basicexec:thdequiv}, while $\sloc$ forms an
+equivalence among reads and writes~\refb{eq:basicexec:locequiv}. We
+allow a distinction between `atomic' and `non-atomic' locations; MCMs
+that do not make this distinction (such as architecture-level MCMs) simply constrain the set of
+non-atomic locations to be empty. The $nal$ set consists only of
+complete $\sloc$-classes~\refb{eq:basicexec:locnal}. A relation $rf$
+is a well-formed \emph{reads-from} if it relates writes to reads at
+the same location~\refb{eq:rfdom} and is injective~\refb{eq:rfunique}.
+The inter-thread reads-from ($rfe$) is derived from $rf$. A relation
+$co$ is a well-formed \emph{coherence order} if when restricted to
+writes on a single atomic location it forms a strict total order; that
+is, it is acyclic and transitive~\refb{eq:cospo}, and it relates every
+pair of distinct writes to the same atomic location~\refb{eq:cotot}.
+\end{definition}
+
+\begin{remark}
+%
+We emphasise that elements of $\E$ have no intrinsic structure, only
+identity. Nevertheless, when drawing executions, we tag events with
+their type: ${\rm R}$ for elements of $R-W$, ${\rm W}$ for elements of
+$W-R$, and ${\rm C}$ (for `compound') for elements of $R\cap W$. We
+indicate $sthd$ equivalence classes with dotted rectangles, and $sloc$
+equivalence classes using named representatives, e.g. "x" and "y". We
+also tag events with the values read/written, but this is purely for
+readability.
+%
+\end{remark}
+
+\begin{remark}[Initial writes] %
+\label{rem:initial_writes} %
+Like some prior MCM formalisations~\cite{sezgin04,mador-haim+12}, but
+unlike most (e.g.~\cite{batty+11, alglave+13, alglave+10, lahav+16}),
+our executions exclude initial writes. We found that Alloy's
+performance degrades rapidly as the upper bound on $\lvert \E \rvert$
+increases; by avoiding initial writes, this bound can be
+lowered. Removing initial writes makes $rf^{-1}$ a \emph{partial}
+function, which complicates the definition of \emph{from-read}, as
+described below. %
+\end{remark}
+%
+\begin{definition}
+\label{def:fromread}
+\emph{From-read} relates each read to all of the writes that are
+$co$-later than the write that the read observed~\cite{ahamad+93}:
+%
+\[
+fr \eqdef ((rf^{-1} \join co) \cup fr_{\rm init}) - \id
+\]
+%
+where
+$fr_{\rm init} \eqdef (\stor{R} - (rf^{-1} \join rf)) \join \sloc
+\join \stor{W}$.
+In the absence of initial writes, $fr_{\rm init}$ handles reads that observe the initial value.
+%
+\end{definition}
+%
+\subsection{Language-Specific Executions} 
+\label{sec:language-specific-executions}
+
+We can obtain executions for various languages as subclasses of
+$\Exec$.
+
+\begin{figure}[t]
+\begin{tabular}{@{}l@{~}l@{~~~~}l}
+$A$   & $\subseteq\E$ & atomic events \\
+$acq$, $rel$ & $\subseteq\E$ & events that have acquire (resp. release) semantics \\
+$sc$ & $\subseteq\E$ & events that have SC semantics
+\end{tabular}
+%\par\vspace*{0.5mm}\rule{\linewidth}{0.4pt}
+\begin{mathpar}
+\labelb{eq:c11exec:a}~ acq \cup rel \cup sc \cup (R\cap W) \cup F \subseteq A \subseteq E
+\and
+\labelb{eq:c11exec:acq}~ R \cap sc \subseteq acq \subseteq
+R \cup F
+\and
+\labelb{eq:c11exec:rel}~ W \cap sc \subseteq rel \subseteq W \cup F
+\and
+\labelb{eq:c11exec:scf}~ F \cap sc \subseteq acq \cap rel
+\and
+\labelb{eq:c11exec:anal}~R-A \subseteq nal \subseteq E-A
+\end{mathpar}
+\par\vspace*{-2mm}
+\caption{C11 executions, $\ExecC$ (extending $\Exec$)}
+\label{fig:c11_exec}
+\end{figure}
+
+\begin{definition}[C11 executions] C11 executions ($\ExecC$) are
+structures that inherit all the fields and well-formedness conditions
+from basic executions, and add those listed in
+Fig.~\ref{fig:c11_exec}. The new fields originate from the `memory
+orders' that are attached to atomic operations in
+C11~\cite[§7.17.3]{c11}. Acquire events, release events, SC events,
+RMWs, and fences are all atomic~\refb{eq:c11exec:a}. Atomic events
+that are neither acquires nor releases correspond to C11's `relaxed'
+memory order. Acquire semantics
+is given to \emph{all} SC reads and \emph{only} reads and
+fences~\refb{eq:c11exec:acq}. Release semantics is given to \emph{all}
+SC writes and \emph{only} writes and fences~\refb{eq:c11exec:rel}. SC
+fences have both acquire and release semantics~\refb{eq:c11exec:scf}.
+Non-atomic reads access only non-atomic locations, and atomic
+operations never access non-atomic locations~\refb{eq:c11exec:anal}.
+\end{definition}
+
+\begin{figure}[t]
+\begin{tabular}{@{}l@{~}l@{~~~~~~~~}l}
+$dv$ & $\subseteq \E$ & events that have whole-device scope \\
+$swg$ & $\subseteq \E^2$ & same workgroup \\
+\end{tabular}
+%\par\vspace*{0.5mm}\rule{\linewidth}{0.4pt}
+%\par\vspace*{-5mm}
+\begin{mathpar}
+\labelb{eq:openclexec:swg}~ 
+sthd \subseteq swg
+\and
+\labelb{eq:openclexec:swgequiv}~ 
+\equivalence(swg, E)
+\and
+\labelb{eq:openclexec:dv}~
+dv \subseteq A
+\end{mathpar}
+\par\vspace*{-2mm}
+\caption{OpenCL executions, $\ExecOpenCL$ (extending $\ExecC$)}
+\label{fig:opencl_exec}
+\end{figure}
+
+\begin{definition}[OpenCL executions] 
+%
+OpenCL~\cite{opencl20} extends C11 with hierarchical models of
+execution and memory that reflect the GPU architectures it was
+primarily designed to target. Accordingly, OpenCL executions
+($\ExecOpenCL$, Fig.~\ref{fig:opencl_exec}) extend C11 executions
+first by partitioning threads into one or more \emph{workgroups} via
+the $swg$
+equivalence~\refb{eq:openclexec:swg}~\refb{eq:openclexec:swgequiv},
+and second by allowing some atomic operations to be tagged as `device
+scope'~\refb{eq:openclexec:dv}, which ensures they are visible
+throughout the device. Other atomics (i.e., with only `workgroup
+scope') can efficiently synchronise threads within a workgroup but
+are unsuitable for inter-workgroup synchronisation. We do not
+consider OpenCL's local memory in this work, and we restrict our
+attention to the single-device case.
+%
+\end{definition}
+
+\begin{figure}[t]
+\begin{tabular}{@{}l@{~}l@{~~~~~~~~}l}
+$dv$ & $\subseteq \E$ & events that have whole-device scope \\
+$swg$ & $\subseteq \E^2$ & same workgroup (`co-operative thread array') \\
+\end{tabular}
+%\par\vspace*{0.5mm}\rule{\linewidth}{0.4pt}
+\begin{mathpar}
+\labelb{eq:ptxexec:swg}~ 
+sthd \subseteq swg
+\and
+\labelb{eq:ptxexec:swgequiv}~ 
+\equivalence(swg, E)
+\and
+\labelb{eq:ptxexec:dvF}~ 
+dv \subseteq F
+\and
+\labelb{eq:ptxexec:nonal}~ 
+nal = \emptyset
+\and
+\labelb{eq:ptxexec:totalsb}~ 
+sthd - \id \subseteq sb \cup sb^{-1}
+\and
+\labelb{eq:ptxexec:rmw}~ 
+R \ncap W
+\end{mathpar}
+\par\vspace*{-2mm}
+\caption{PTX executions, $\ExecPTX$ (extending $\Exec$)}
+\label{fig:ptx_exec}
+\end{figure}
+
+\begin{definition}[PTX executions] 
+%
+Like OpenCL executions, PTX executions ($\ExecPTX$,
+Fig.~\ref{fig:ptx_exec}) gather threads into
+groups~\refb{eq:ptxexec:swg}~\refb{eq:ptxexec:swgequiv}. Some PTX
+fences ("membar.gl") have whole-device scope~\refb{eq:ptxexec:dvF},
+and others ("membar.cta") have only workgroup scope. There are no
+non-atomic locations~\refb{eq:ptxexec:nonal}, sequencing is total
+within each thread~\refb{eq:ptxexec:totalsb}, and we do not consider
+RMWs~\refb{eq:ptxexec:rmw}.
+%
+\end{definition}
+
+\begin{remark} When drawing C11 executions, we identify the sets $A$,
+$acq$, $rel$ and $sc$ by tagging events in $E-A$ with $\na$, those in
+$A - acq - rel$ with $\morlx$, those in $acq - rel - sc$ with
+$\moacq$, those in $rel - acq - sc$ with $\morel$, those in
+$acq \cap rel - sc$ with $\moar$, and those in $sc$ with $\mosc$. In
+OpenCL or PTX executions, we tag events in $A - dv$ with $\mswg$, and
+those in $dv$ with $\msdv$. \end{remark}
+
+\subsection{Consistent, Race-Free, and Allowed Executions}
+\label{sec:c11_consistency}
+
+Each MCM $M$ defines sets $consistent_M$ and $racefree_M$ of
+executions. (For architecture-level MCMs, which do not define races,
+the latter contains all executions.) The sets work together to define
+the executions allowed under $M$, as follows.
+
+\begin{definition}[Allowed executions] 
+\label{def:allowed_execs}
+The executions of a program $P$
+that are allowed under an MCM $M$ are
+%
+\[
+\sem{P}_M \eqdef \begin{cases} 
+\mathrlap{\cand{P} \cap consistent_M}\quad\quad\quad\quad \\ & \text{if}~\cand{P}\cap
+consistent_M \subseteq racefree_M \\
+\top & \text{otherwise}
+\end{cases}
+\]
+%
+where $\top$ stands for an appropriate universal set. Here, $\cand{P}$
+is the set of $P$'s \emph{candidate executions}. These can be thought
+of as the executions allowed under an MCM that imposes no constraints,
+and are discussed separately (see
+Def.~\ref{def:candidate_executions}). The equation above says that the
+allowed executions of $P$ are its consistent candidates, unless a
+consistent candidate is racy, in which case \emph{any} execution is
+allowed. (This is sometimes called `catch-fire'
+semantics~\cite{boehm+08}.) \end{definition}
+
+\newcommand\dashboxed[1]{\begin{tikzpicture}[baseline=(a.base)]
+\node[anchor=base, draw, dashed, inner sep=1mm, rounded corners](a)
+{$#1$};
+\end{tikzpicture}}
+
+\begin{figure}[t]
+\begin{myFrame}{$consistent_{\mm{C11}}$}
+\begin{mathpar}
+\labelb{eq:c11c:uniproc}~
+\acyclic((hb \cap \sloc) \cup rf \cup co \cup fr)
+\and
+\labelb{eq:c11c:narf}~ 
+rf \join \stor{nal} \subseteq \imm(\stor{W} \join (hb \cap \sloc))
+\and
+\labelb{eq:c11c:ssimp}~
+\acyclic((Fsb^? \join (co \cup fr \cup hb) \join
+    sbF^?) \cap sc^2 \dashboxed{{}\cap incl})
+\end{mathpar}
+\end{myFrame}
+\vspace*{-2mm}
+\begin{myFrame}{$racefree_{\mm{C11}}$}
+\begin{mathpar}
+\labelb{eq:c11r:dr}~
+cnf - A^2 - \sthd \subseteq hb \cup hb^{-1}
+\and
+\labelb{eq:c11r:ur}~ 
+cnf \cap \sthd \subseteq sb \cup sb^{-1}
+\and
+\dashboxed{\labelb{eq:c11r:hr}~ 
+cnf - incl \subseteq hb \cup hb^{-1}}
+\end{mathpar}
+\end{myFrame}
+\begin{mathpar}
+Fsb \eqdef \stor{F}\join sb
+\and
+sbF \eqdef sb \join \stor{F}
+\and
+rs \eqdef (sb \cap \sloc)^* \join rf^* 
+\and
+sw \eqdef \stor{rel} \join Fsb^? \join \stor{W\cap A} \join rs
+\join rf \join \stor{R\cap A} \join sbF^? \join \stor{acq}
+\and
+\dashboxed{incl \eqdef dv^2 \cup swg}
+\and
+hb \eqdef ((sw\, \dashboxed{{}\cap incl} - \sthd) \cup sb)^+
+\and
+cnf \eqdef ((W \times W) \cup (R \times W) \cup (W \times R)) \cap \sloc - \id
+\end{mathpar}
+\caption{The C11 \protect\dashboxed{\mbox{and OpenCL}} MCMs}
+\label{fig:c11_predicates}
+\end{figure}
+
+The consistency and race-freedom axioms for C11 and OpenCL (minus
+`consume' atomics) are defined in Figure~\ref{fig:c11_predicates} and
+explained below. We have included some recently-proposed
+simplifications. In particular, the simpler release sequence (proposed
+by Vafeiadis et al.~\cite{vafeiadis+15}) makes deadness easier to
+define (\S\ref{sec:safety}), and omitting the total order `$S$' over
+SC events (as proposed by Batty et al.~\cite{batty+16}) avoids having
+to iterate over all total orders when showing an execution to be
+inconsistent.
+
+\emph{Happens before} ($hb$) edges are created by sequencing and by a
+release \emph{synchronising with} ($sw$) an acquire in a different
+thread. Synchronisation begins with a release write (or a release
+fence that precedes an atomic write) and ends with an acquire read (or
+an acquire fence that follows an atomic read) and the read observes
+either that write or a member of the write's \emph{release sequence}
+($rs$). An event's release sequence comprises all the writes to the
+same location that are sequenced after the event, as well as the RMWs
+(which may be in another thread) that can be reached from one of those
+writes via a chain of $rf$ edges~\cite[\S4.3]{vafeiadis+15}. In
+OpenCL, synchronisation only occurs between events with
+\emph{inclusive scopes} ($incl$), which means that if the events are
+in different workgroups they must both be annotated with `device' scope.
+Happens-before edges between events accessing the same location,
+together with $rf$, $co$, and $fr$ edges, must not form
+cycles~\refb{eq:c11c:uniproc}~\cite[\S5.3]{vafeiadis+15}. A read of a
+non-atomic location must observe a write that is still \emph{visible}
+($vis$)~\refb{eq:c11c:narf}. The \emph{sequential consistency} (SC)
+axiom~\refb{eq:c11c:ssimp} requires, essentially, that the $co$, $hb$
+and $fr$ edges between $sc$ events do not form
+cycles~\cite[\S3.2]{batty+16} An execution has a \emph{data race}
+unless every pair of conflicting ($cnf$) events in different threads,
+not both atomic, is in $hb$~\refb{eq:c11r:dr}. It has an
+\emph{unsequenced race} unless every pair of conflicting events in the
+same thread is in $sb$~\refb{eq:c11r:ur}. An OpenCL execution has a
+\emph{heterogeneous race}~\cite{hower+14} unless every pair of
+conflicting events with non-inclusive scopes is in
+$hb$~\refb{eq:c11r:hr}.
+
+% \begin{remark}
+% \label{rem:S}
+% The SC axiom above is from a revised version of the C11 MCM
+% suggested by Batty et al.~\cite{batty+16}. In the original MCM, the
+% consistency of an execution depends on the existence of a suitable
+% total order, say $S$, over SC events. We prefer the revised version in
+% this work because when we later search for an \emph{inconsistent} C11
+% execution, we need not iterate over all $S$ orders.
+% \end{remark}
+
+% \begin{remark}
+% \label{rem:c11_initial_writes}
+% We have made a few departures from Batty et al.'s presentation of
+% these axioms~\cite{batty+16}, as necessitated by our omission of
+% initial writes (Rem.~\ref{rem:initial_writes}). First, happens-before
+% ($hb$) no longer needs to explicitly connect initial writes to other
+% events. Second, now that $rf^{-1}$ is no longer a total function, the
+% coherence axiom can no longer be phrased as Batty et al. had it
+% ($\irreflexive((rf^{-1})^?\join co \join rf^? \join hb)$), and must
+% instead be stated using
+% from-read~\refb{eq:c11c:coh}.\footnote{Somewhat more obscurely: the
+% `S4' axiom in the original C11 MCM~\cite{batty+16} must also be
+% updated to account separately for initial reads. That is, we require
+% not just
+% $\irreflexive((S - (co\join S)) \join rf^{-1} \join (hb \cap \sloc)
+% \join [W])$,
+% but now
+% $\irreflexive((S - (co\join S)) \join (\stor{R} - (rf^{-1} \join rf))
+% \join fr)$ as well.}
+% \end{remark}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

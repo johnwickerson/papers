@@ -1,0 +1,258 @@
+\section{Performance Evaluation}
+\label{sec:eval}
+
+In this section, we report on an empirical investigation of how our
+design decisions affect Alloy's SAT-solving performance.
+
+\begin{table}
+\newcommand\Gluc{{\sf G}}
+\newcommand\Plin{{\sf P}}
+\newcommand\Mini{{\sf M}}
+\newcommand\TICK{\textcolor{Red}{\cmark}}
+\newcommand\CROSS{\textcolor{Green}{\xmark}}
+\centering
+\renewcommand\tabcolsep{0.9mm}
+\begin{tabularx}{\linewidth}{@{\,}rX@{}rrrcc@{\,}}
+\toprule
+\multicolumn{2}{@{\,}l}{Task} & $\lvert\E\rvert$ & $t_{\rm enc} / {\rm s}$ & 
+$t_{\rm sol} / {\rm s}$ & & \\
+\midrule
+1 & \Q2 \mm{C11-SRA} vs. \mm{C11} (\S\ref{sec:Q2_c11_sra_simp}) & $6$ 
+& $0.7$ & $0.6\phantom{0}$ & \Gluc & \TICK \\
+2 & \Q2 \mm{C11-SwRf} vs. \mm{C11} (\S\ref{sec:kyndylan}) & $7$ 
+& $0.8$ & $625\phantom{.00}$ & \Gluc & \CROSS \\
+3 & \Q2 \mm{C11-SwRf} vs. \mm{C11} (\S\ref{sec:kyndylan}) & $12$ 
+& $2\phantom{.0}$ & $214\phantom{.00}$ & \Plin & \TICK \\
+4 & \Q2 \mm{C11} vs. \mm{C11-Orig} (\S\ref{sec:Q2_c11_simp_orig})&$5$
+& $0.4$ & $0.3\phantom{0}$ & \Gluc & \TICK \\
+5 & \Q2 \mm{MCA} vs. \mm{x86} (\S\ref{sec:Q2_mca}) & $9$ 
+& $0.8$ & $607\phantom{.00}$ & \Plin & \CROSS \\
+6 & \Q2 \mm{MCA} vs. \mm{Power} (\S\ref{sec:Q2_mca}) & $6$ 
+& $2\phantom{.0}$ & $0.06$ & \Gluc & \TICK \\
+7 & \Q2 \mm{SC} vs. \mm{C11-Draft} (\S\ref{sec:scdrf}) & $4$ 
+& $0.4$ & $0.04$ & \Gluc & \TICK \\
+8 & \Q2 \mm{PTX2} vs. \mm{PTX1} (\S\ref{sec:Q4_opencl_ptx}) & $7$ 
+& $0.7$ & $4\phantom{.00}$ & \Gluc & \TICK \\
+9 & \Q3 \mm{C11} (sequencing) (\S\ref{sec:Q3_c11_seq}) & $5$ 
+& $0.5$ & $163\phantom{.00}$ & \Mini & \CROSS \\
+10 &  \Q3 \mm{C11} (sequencing) (\S\ref{sec:Q3_c11_seq}) & $6$ 
+& $0.7$ & $5\phantom{.00}$ & \Plin & \TICK \\
+11 & \Q3 \mm{C11} (mem. orders) (\S\ref{sec:Q3_c11_mo}) & $7$ 
+& $0.9$ & $51\phantom{.00}$ & \Gluc & \TICK \\
+12 & \Q4 \mm{C11} / \mm{x86} & $5+5$ 
+& $0.7$ & $13029\phantom{.00}$ & \Plin & \CROSS \\
+13 & \Q4 \mm{C11} / \mm{Power} (\S\ref{sec:Q4_c11_power}) & $6+8$ 
+& $8\phantom{.0}$ & $91\phantom{.00}$ & \Plin & \TICK \\
+14 & \Q4 \mm{OpenCL} / \mm{AMD} (\S\ref{sec:Q4_opencl_amd}) & $2+9$ 
+& $6\phantom{.0}$ & $1355\phantom{.00}$ & \Gluc & \TICK \\
+15 & \Q4 \mm{OpenCL} / \mm{AMD} (\S\ref{sec:Q4_opencl_amd}) & $4+10$ 
+& $16\phantom{.0}$ & $4743\phantom{.00}$ & \Plin & \TICK \\
+16 & \Q4 \mm{OpenCL} / \mm{PTX1} (\S\ref{sec:Q4_opencl_ptx}) & $5+8$ 
+& $2\phantom{.0}$ & $11\phantom{.00}$ & \Plin & \TICK \\
+17 & \Q4 \mm{OpenCL} / \mm{PTX2} (\S\ref{sec:Q4_opencl_ptx}) & $5+15$
+& $4\phantom{.0}$ & $9719\phantom{.00}$ & \Plin & \CROSS 
+\end{tabularx}
+%
+\caption{Summary of tasks. We record the number ($\lvert\E\rvert$) of
+events in the search space, the time taken (in seconds) to encode ($t_{\rm enc}$)
+and then solve ($t_{\rm sol}$) the SAT query, whether the fastest
+solver was MiniSat (\Mini), Glucose (\Gluc), or Plingeling (\Plin),
+and whether a solution was found (\TICK) or not (\CROSS). For \Q4
+tasks, $m+n$ means that $\E$ is partitioned into $m$ software-level and $n$ architecture-level events.}
+
+\label{tab:tasks}
+\end{table}
+
+Table~\ref{tab:tasks} summarises the tasks on which we have evaluated
+our technique. We used a machine with four 16-core 2.1 GHz AMD
+Opteron processors and 128 GB of RAM.
+
+%%%%%
+% C11/Power results (6 SE + 8 HE)
+% Without simplified compiler: 25383s (7 hours)
+% With:
+% Plingeling: 55s (+8s of processing), 138s, 70s, 102s
+% Glucose: 1723s, 2274s, 2600s, 2364s 
+% Minisat: 171s, 146s, 168s, 149s
+%%%%%
+
+\tikzset{
+  glucosebar/.style={draw=none, fill=white!30!red},
+  minisatbar/.style={draw=none, fill=white!30!blue},
+  plingelingbar/.style={draw=none, fill=white!30!green},
+}
+
+\subsection{Choice of SAT Solver}
+
+Figure~\ref{fig:solver_results} summarises the performance of three
+SAT solvers on our tasks: Glucose (version~2.1)~\cite{audemard+09},
+MiniSat (version~2.2)~\cite{een+03}, and Plingeling~\cite{biere10}. Each bar shows
+the mean solve time over 4 runs, plus the minimum and maximum
+time.\footnote{A more thorough comparison of SAT solvers would control for the
+order of clauses, which greatly influences
+performance~\cite{nikolic10}.}
+Plingeling is able to complete all tasks, whereas Glucose and MiniSat
+time out on three and five of them respectively. On the tasks all
+three solvers complete, MiniSat takes an average of 9 minutes, Glucose
+takes 8, and Plingeling takes 6. Plingeling's relatively high startup
+overhead is evident on the quicker tasks.
+
+% 12 tasks where all solvers complete: 1,2,4,5 ,6,7,9 ,10,11,13,14,16
+% Averages: Glucose=8min, Plingeling=6min, Minisat=9min.
+
+\begin{figure}
+
+\def\mybarwidth{1.5pt}
+\def\timeout{14400}
+
+\centering
+
+\begin{tikzpicture}
+\begin{semilogyaxis}[
+  legend pos=north west,
+  xtick={1,...,17},
+  xticklabels={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17},
+  xmin=0.3,
+  xmax=17.7,
+  x label style={at={(axis description cs:-0.14,0.155)},anchor=north
+  west},
+  log ticks with fixed point,
+  ytick={1,100,10000},
+  yticklabels={$1$, $100$, \llap{$10000$}},
+  ylabel near ticks,
+  xlabel={Task:},
+  ylabel={Solve time /s\hspace*{2mm}},
+  xtick style={draw=none},
+  ybar=0.5pt,
+  bar width=\mybarwidth,
+  log origin=infty,
+  height=4cm,
+  width=8.9cm,
+  legend columns=-1,
+]
+\addplot[minisatbar]
+plot [error bars/.cd, y dir=both, y explicit, error mark options={mark
+size=\mybarwidth/2, rotate=90}] 
+table [x=x, y=y, y error minus expr=\thisrow{y}-\thisrow{ymin}, y
+error plus expr=\thisrow{ymax}-\thisrow{y}, col sep=comma]
+{MiniSat.csv};
+
+\addplot[glucosebar]
+plot [error bars/.cd, y dir=both, y explicit, error mark options={mark
+size=\mybarwidth/2, rotate=90}] 
+table [x=x, y=y, y error minus expr=\thisrow{y}-\thisrow{ymin}, y
+error plus expr=\thisrow{ymax}-\thisrow{y}, col sep=comma]
+{Glucose.csv};
+
+\addplot[plingelingbar]
+plot [error bars/.cd, y dir=both, y explicit, error mark options={mark
+size=\mybarwidth/2, rotate=90}] 
+table [x=x, y=y, y error minus expr=\thisrow{y}-\thisrow{ymin}, y
+error plus expr=\thisrow{ymax}-\thisrow{y}, col sep=comma]
+{Plingeling.csv};
+
+\draw [black!50, dashed] ({rel axis cs:0,0}|-{axis cs:12,\timeout}) -- ({rel axis
+cs:1,0}|-{axis cs:12,\timeout}) node [inner sep=0pt,pos=0.55,
+below=0.3mm] {\scriptsize 4-hour timeout};
+
+%\legend{MiniSat\hspace*{2mm}, Glucose\hspace*{2mm}, Plingeling}
+\end{semilogyaxis}
+\end{tikzpicture}
+\def\fooo{MiniSat 
+(\,{\tikz\draw[minisatbar,/tikz/.cd,yshift=-0.25em]
+        (0cm,0cm) rectangle (\mybarwidth,0.8em);}\,), Glucose
+(\,{\tikz\draw[glucosebar,/tikz/.cd,yshift=-0.25em]
+        (0cm,0cm) rectangle (\mybarwidth,0.8em);}\,) and Plingeling (\,{\tikz\draw[plingelingbar,/tikz/.cd,yshift=-0.25em]
+        (0cm,0cm) rectangle (\mybarwidth,0.8em);}\,)
+}
+\vspace*{-3mm}
+\caption{Comparing \protect\fooo} 
+\label{fig:solver_results}
+\end{figure}
+ 
+
+\subsection{Combined vs. Separate Event Sets}
+
+For \Q4 tasks (\S\ref{sec:compilers}), we can choose to draw
+software-level and architecture-level events either from a single set
+$\E$ or from disjoint partitions $\SE$ and $\HE$. The former approach
+is attractive because it gives the user one fewer parameter to
+control, and it minimises the total number of events required to find
+solutions because a single element of $\E$ can represent both a
+software-level event and an architecture-level event. However, as
+shown in Tab.~\ref{tab:tasks}, we choose the latter approach. To see
+why, consider Task 17. To validate the OpenCL/PTX mapping for OpenCL
+executions of up to 5 events, we must consider PTX executions of up to
+15 events (since each OpenCL event can map to up to three PTX events).
+We found that setting $\lvert\SE\rvert = 5$ and $\lvert\HE\rvert = 15$
+led to a tractable constraint-solving problem for Alloy, but that
+merely setting $\lvert\E\rvert = 15$, which involves fewer events in
+total but includes OpenCL executions with more than 5 events, rendered the problem insoluble.
+
+\subsection{Recursive Definitions vs. Fixed Unrolling}
+\label{sec:fixpoints}
+
+\begin{figure}
+
+\def\mybarwidth{6.5pt}
+
+\centering
+
+\begin{tikzpicture}
+\begin{semilogyaxis}[
+  legend pos=north west,
+  xtick={2,3,4,5,6,8},
+  xticklabels={$2$,$3$,$4$,$5$,$6$,$\infty$},
+  xmin=1.5,
+  xmax=8.5,
+  log ticks with fixed point,
+  ytick={200,1000,5000},
+  yticklabels={$200$, $1000$, $5000$},
+  x label style={at={(axis description cs:-0.02,0.23)},anchor=north west},
+  ylabel near ticks,
+  xlabel={$k$:},
+  ylabel={Solve time /s},
+  xtick style={draw=none},
+  ybar=0.5pt,
+  bar width=\mybarwidth,
+  log origin=infty,
+  height=3.3cm,
+  width=8.7cm,
+  legend columns=-1,
+]
+\addplot[glucosebar]
+plot [error bars/.cd, y dir=both, y explicit, error mark options={mark
+size=\mybarwidth/2, rotate=90}] 
+table [x expr=\thisrow{k}+1, y=mean, y error minus expr=\thisrow{mean}-\thisrow{min}, y
+error plus expr=\thisrow{max}-\thisrow{mean}, col sep=comma]
+{Fixpoints.csv};
+\end{semilogyaxis}
+\end{tikzpicture}
+\vspace*{-3mm}
+\caption{Performance of Task 13 with fixpoints unrolled $k$ times} 
+\label{fig:fixpoint_results}
+\end{figure}
+
+Alglave et al.'s formalisation of the Power MCM in the ".cat" format
+involves several recursively-defined relations, but Alloy does not
+support definitions of the form `"let rec $r = f(r)$"'. Accordingly,
+in our formalisation of the Power MCM~\cite{popl17supplementary}, we
+expand the recursive construction explicitly, by requiring the
+existence of an $r$ satisfying $f(r) \subseteq r$ and
+$\forall r'\ldotp f(r')\subseteq r' \Rightarrow r \subseteq r'$. The
+latter constraint involves universal quantification over relations and
+hence requires the higher-order AlloyStar solver~\cite{milicevic+15}.
+A first-order alternative is simply to unroll the recursive
+definitions a few times; that is, to set $r \eqdef f^k(\emptyset)$ for a
+fixed $k$. We found, for the small search scopes involved in our work,
+that $k\ge 2$ is sufficient for avoiding false positives when checking
+a compiler mapping from C11 (Task~13).
+Figure~\ref{fig:fixpoint_results} shows that the proper fixpoint
+construction (i.e., $k=\infty$) is much more expensive than a
+fixed unrolling.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

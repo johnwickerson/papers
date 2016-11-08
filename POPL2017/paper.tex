@@ -1,0 +1,496 @@
+\documentclass[preprint]{sigplanconf}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{datetime}
+\usepackage[usenames,dvipsnames,table]{xcolor}
+\usepackage[T1]{fontenc} % for proper _ in tt mode
+\usepackage[utf8]{inputenc}
+\usepackage{mathpartir}
+\mprset{andskip=0.8em plus 0.5fil}
+\makeatletter
+\def\mpr@paroptions{\mpr@lesslineskip}
+\makeatother
+\usepackage{mathtools}
+\usepackage{bbm}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{fixltx2e} % fixes \textsubscript macro
+\usepackage{stmaryrd}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage[ruled, linesnumbered]{algorithm2e}
+%\usepackage[noend]{algpseudocode}
+%\renewcommand\textfraction{0}
+
+% Ticks and crosses {
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand\cmark{\ding{51}}%
+\newcommand\xmark{\ding{55}}%
+% }
+
+% Inline lists {
+\usepackage[inline]{enumitem}
+\newenvironment{inlineitemize}{
+\begin{itemize*}[label={},afterlabel={},before=\unskip]
+}{
+\end{itemize*}
+}
+\newenvironment{inlineenumerate}{
+\begin{enumerate*}[label={\arabic*.}]
+}{
+\end{enumerate*}
+}
+% }
+
+% Fiddling with the style of {description} lists. {
+\renewcommand{\descriptionlabel}[1]{%
+\hspace{\labelsep}\emph{#1}\hspace*{1.5mm}%
+}
+% }
+
+% Reduce spacing above/below figures {
+\setlength{\floatsep}{16pt plus 4pt minus 2pt}
+\setlength{\textfloatsep}{16pt plus 4pt minus 3pt}
+% }
+
+% Fancy frames {
+
+\definecolor{shadecolor}{HTML}{EEEEEE}
+
+% \newcommand\myFrame[2]{%
+% \noindent
+% \begin{tikzpicture}
+% \node[inner sep=2mm, draw=black!20, line width=0.8mm, text
+% width=\dimexpr\linewidth-4mm-\pgflinewidth\relax] (T)
+% {\vspace*{1mm}\par #2};
+% \node[inner sep=1mm, draw=none,fill=white, align=left,
+% anchor=west] (H) at (T.north west)[xshift=3mm] {#1};
+% \end{tikzpicture}%
+% \par
+% }
+
+% \newcommand\myFrame[2]{%
+% \noindent
+% \definecolor{shadecolor}{HTML}{FFFFFF}
+% \begin{framed}
+% \smash{\raisebox{0mm}{\hspace*{1mm}\tikz\node[draw=black, fill=red]{#1};}} #2
+% \end{framed}
+% \par}
+
+\usepackage{mdframed}
+\newenvironment{myFrame}[1]{%
+\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=white] {#1};},
+innertopmargin=-10pt,linecolor=black!20,linewidth=2pt,topline=true,
+frametitleaboveskip=\dimexpr-\ht\strutbox\relax}
+\begin{mdframed}[]\relax%
+}{\end{mdframed}}
+% }
+
+
+% Theorems {
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\newtheorem{remark}[lemma]{Remark}
+\newtheorem{example}{Example}
+\newtheorem*{notation}{Notation}
+\newenvironment{Solution}{\begin{proof}[Solution]}{\end{proof}}
+\newenvironment{commentary}{\begin{proof}[Commentary]\phantom\qedhere}{\end{proof}}
+\newenvironment{Example}{\begin{snugshade}\begin{example}}{\end{example}\end{snugshade}}
+\setlength\FrameSep{1.5mm}
+\newenvironment{Theorem}{\begin{oframed}\begin{theorem}}{\end{theorem}\end{oframed}}
+% }
+
+% Easy line breaks in displaymath mode {
+\newcommand\stack[2][l]{{\renewcommand\arraystretch{1}\begin{array}[t]{@{}#1@{}}#2\end{array}}}
+% }
+
+% Start of 'ignore natbib' hack
+\let\bibhang\relax
+\let\citename\relax
+\let\bibfont\relax
+\let\Citeauthor\relax
+\expandafter\let\csname ver@natbib.sty\endcsname\relax
+% End of 'ignore natbib' hack
+\usepackage[backend=bibtex, sortcites, maxnames=10]{biblatex}
+
+\renewcommand*{\postnotedelim}{\space}
+\let\oldcite\cite
+\renewcommand\cite[2][]{%
+\ifx\\#1\\%
+  \oldcite{#2}%
+\else% 
+  \oldcite[(#1)]{#2}%
+\fi}
+
+%\addbibresource{/Users/jpw48/Dropbox/John.bib}
+% cd ~/git/memalloy/paper && bibexport -o memalloy.bib paper.aux
+\addbibresource{memalloy.bib}
+
+\usepackage{tikz}
+\usetikzlibrary{matrix,fit,calc,positioning,backgrounds,arrows,patterns,decorations}
+\tikzset{event/.style={draw=none, inner sep=0.4mm}}
+% {
+\pgfdeclaredecoration{simple line}{initial}{
+\state{initial}[width=\pgfdecoratedpathlength-1sp]{%
+  \pgfmoveto{\pgfpointorigin}}
+\state{final}{\pgflineto{\pgfpointorigin}}
+}
+\tikzset{
+   shift left/.style={%
+     decorate,decoration={simple line,raise=#1}},
+   shift right/.style={%
+     decorate,decoration={simple line,raise=-1*#1}},
+}
+% }
+
+\usepackage{pgfplots}
+\pgfplotsset{
+  discard if not/.style 2 args={
+    x filter/.code={
+      \edef\tempa{\thisrow{#1}}
+      \edef\tempb{#2}
+      \ifx\tempa\tempb
+      \else
+        \def\pgfmathresult{inf}
+      \fi
+    }
+  }
+}
+
+% Coloring edges in execution graphs {
+\definecolor{colormo}{HTML}{3366CC}
+\definecolor{colorrf}{HTML}{FF0000}
+\definecolor{colorfr}{HTML}{006600}
+\definecolor{colorhb}{HTML}{660000}
+\definecolor{colorS}{HTML}{990099}
+
+\tikzset{
+  edgemo/.style={colormo,-latex},
+  edgerf/.style={colorrf,-latex},
+  edgefr/.style={colorfr,dashed,-latex},
+  edgeS/.style={colorS, -latex},
+  edgesb/.style={black, -latex},
+  edgethd/.style={black, latex-latex},
+  edgepi/.style={black!40, dashed, -latex},
+  sthd/.style={draw, dotted, inner sep=1mm, rounded corners},
+  sthd_qtight/.style={draw, dotted, inner sep=0.2mm, rounded corners},
+  swg/.style={draw, dotted, inner sep=1mm, rounded corners},
+  sthd_tight/.style={draw, dotted, inner sep=0mm, rounded corners},
+  edgethen/.style={black, line width=1pt, ->},
+}
+% }
+
+% Memory orders {
+\newcommand\morlx{{\tt RLX}}
+\newcommand\moacq{{\tt ACQ}}
+\newcommand\mocon{{\tt CON}}
+\newcommand\morel{{\tt REL}}
+\newcommand\moar{{\tt AR}}
+\newcommand\mosc{{\tt SC}}
+\newcommand\msdv{{\tt DV}}
+\newcommand\mswg{{\tt WG}}
+\newcommand\na{{\tt na}}
+% }
+
+% Memory events {
+\newcommand\evW[3]{{\rm W}_{#1}\,{#2}\,{#3}}
+\newcommand\evR[3]{{\rm R}_{#1}\,{#2}\,{#3}}
+\newcommand\evRMW[4]{{\rm C}_{#1}\,{#2}\,{#3}/{#4}}
+\newcommand\evF[1]{{\rm F}_{#1}}
+\newcommand\evEFlu[1]{\mathit{flu}\,{#1}}
+\newcommand\evEFet[1]{\mathit{fet}\,{#1}}
+\newcommand\evFlu{{\rm Flu}}
+\newcommand\evInv{{\rm Inv}}
+\newcommand\evRemInv{{\rm InvA}}
+\newcommand\evLk[1]{{\rm Lk}\,{#1}}
+\newcommand\evUk[1]{{\rm Uk}\,{#1}}
+\newcommand\evWCL[4]{{\rm W}_{#1,#4}\,{#2}\,{#3}}
+\newcommand\evRCL[4]{{\rm R}_{#1,#4}\,{#2}\,{#3}}
+
+% }
+
+\newcommand\evtlbl[1]{\mbox{#1:~}}
+
+\usepackage[overlay,absolute]{textpos}
+
+\newcommand\badgeshift{\hspace*{5mm}}
+
+\title{Automatically Comparing Memory Consistency Models}
+\authorinfo{John Wickerson}{Imperial College London, UK}{j.wickerson@imperial.ac.uk}
+\authorinfo{Mark Batty\badgeshift}{University of Kent, UK\badgeshift}{m.j.batty@kent.ac.uk\badgeshift}
+\authorinfo{Tyler Sorensen}{Imperial College London, UK}{t.sorensen15@imperial.ac.uk}
+\authorinfo{George A. Constantinides\badgeshift}{Imperial College London,
+UK\badgeshift}{g.constantinides@imperial.ac.uk\badgeshift}
+
+\makeatletter
+\newcommand{\customlabel}[2]{%
+\protected@write \@auxout {}{\string \newlabel {#1}{{#2}{}}}}
+\makeatother
+
+\newcommand\blacknum[1]{%
+\begin{tikzpicture}[baseline=-0.3em]%
+\node[circle, draw=none, fill=black, inner sep=0pt, outer sep=0pt, minimum
+size=0.9em](a){%
+\clap{\textcolor{white}{\tiny\sf\bfseries #1}}
+};%
+\end{tikzpicture}%
+}
+
+\newcounter{ctrb}
+\setcounter{ctrb}{0}
+\newcommand\labelb[1]{
+\stepcounter{ctrb}
+\customlabel{#1}{\thectrb}
+\blacknum{\thectrb}
+}
+\newcommand\refb[1]{\blacknum{\ref{#1}}}
+
+\newif\iftodos
+\todostrue % Turn on/off TODO comments
+\newcommand\JWComment[1]{\iftodos{\textcolor{Purple}{{\bf [[JW:}
+#1{\bf ]]}}}\fi}
+\newcommand\TSComment[1]{\iftodos{\textcolor{blue}{{\bf [[TS:}
+#1{\bf ]]}}}\fi}
+\newcommand\MBComment[1]{\iftodos{{\color{Green}{{\bf [[MB:}
+#1{\bf ]]}}}}\fi}
+\newcommand\GCComment[1]{\iftodos{{\color{Purple}{{\bf [[GC:}
+#1{\bf ]]}}}}\fi}
+
+
+% Auto-detect multi-letter variable names in math-mode 
+% From: http://tex.stackexchange.com/a/218659
+% (
+\everymath{\it}\everydisplay{\it}
+\def\mathcodes#1{\mathcode`#1=\numexpr\mathcode`#1-"7000\relax 
+   \ifx#10\else\expandafter\mathcodes\fi}
+\mathcodes1234567890
+% )
+
+\mathchardef\mhyphen="2D
+
+% Define "foo" as shorthand for {\tt foo} (
+\catcode`"=\active
+\def"#1"{\texttt{#1}}
+% )
+
+
+\newcommand\id{\mathit{id}}
+\newcommand\stor[1]{{[#1]}}
+\newcommand\mm[1]{\textsf{#1}}
+\newcommand\acyclic{\mathit{acyclic}}
+\newcommand\irreflexive{\mathit{irreflexive}}
+\newcommand\equivalence{\mathit{equiv}}
+\newcommand\spo{\mathit{strict\mhyphen{}po}}
+\newcommand\sthd{sthd}
+\newcommand\sloc{sloc}
+\newcommand\intransitive{\mathit{intransitive}}
+\newcommand\imm{\mathit{imm}}
+\newcommand\preexecs[1]{\mathit{pre}(#1)}
+\newcommand\pre[1]{{#1}_{\rm pre}}
+\newcommand\ncap{\mathbin{\not\hspace{-0.25em}\cap}}
+\newcommand\join{\mathbin{;}}
+\newcommand\tightjoin{{;}}
+\newcommand\comp[1]{\overline{#1}}
+\renewcommand\parallel{\mathbin{\textsf{ll}}}
+\newcommand\E{\mathbb{E}}
+\newcommand\HE{\mathbb{E}_{\rm arch}}
+\newcommand\SE{\mathbb{E}_{\rm sw}}
+\newcommand\lit{\textbf{\itshape lit}}
+\newcommand\litmax{\textbf{\itshape lit}^{\rm min}}
+\newcommand\litmaxdet{\textsc{Lit}}
+\newcommand\litgen{\textbf{\itshape lit}'}
+\newcommand\obs{\mathbf{obs}}
+\newcommand\Inst{\mathbb{I}}
+\newcommand\Thread{\mathbb{C}}
+\newcommand\Prog{\mathbb{P}}
+\newcommand\Reg{\mathbb{R}}
+\newcommand\Loc{\mathbb{L}}
+\newcommand\ALoc{\mathbb{L}_{\rm a}}
+\newcommand\NALoc{\mathbb{L}_{\rm na}}
+\newcommand\Val{\mathbb{V}}
+\newcommand\Expr[1]{\mathbb{A}_{#1}}
+\newcommand\Exec{\mathbb{X}}
+\newcommand\ExecC{\mathbb{X}_{\rm C11}}
+\newcommand\ExecOpenCL{\mathbb{X}_{\rm OpenCL}}
+\newcommand\ExecPTX{\mathbb{X}_{\rm PTX}}
+\newcommand\ExecH{\mathbb{X}_{\rm H}}
+\newcommand\cmdpar{\textsc{cmd}'}
+\newcommand\cmdseq{\textsc{cmd}}
+\newcommand\sem[1]{{\llbracket #1 \rrbracket}}
+\newcommand\cof[1]{\lfloor #1 \rfloor}
+%\newcommand\roundsem[1]{\llparenthesis #1 \rrparenthesis}
+\newcommand\cand[1]{\sem{#1}_0}
+\newcommand\C[1]{\textcolor{blue}{\texttt{#1}}}
+\newcommand\Alloystar{AlloyStar}
+\newcommand\eqdef{\stackrel{\text{\tiny def}}{=}}
+\newcommand\dom{\mathrm{dom}}
+\newcommand\ran{\mathrm{ran}}
+\renewcommand\gets{:=}
+\newcommand\getsany{:\in}
+\newcommand\kw[1]{\textbf{#1}}
+\newcommand\field[2]{{#2}_{#1}}
+
+\newcommand\Fwg[1]{{\rm F}_{"WG"}(#1)}
+\newcommand\Fdv[1]{{\rm F}_{"DV"}(#1)}
+\newcommand\Wnarlx[1]{{\rm W}_{\na,\morlx}(#1)}
+\newcommand\Wrel[1]{{\rm W}_{\morel}(#1)}
+\newcommand\Wsc[1]{{\rm W}_{\mosc}(#1)}
+\newcommand\Rna[1]{{\rm R}_{\na}(#1)}
+\newcommand\Ra[1]{{\rm R}_{\morlx,\moacq,\mosc}(#1)}
+\newcommand\membar[3]{{\rm F}(#1,#2,#3)}
+
+\newcommand\litmustestI[3]{
+\begin{tabular}{|l|}
+\hline
+\multicolumn{1}{|l|}{\texttt{#1}} \\
+#2
+\multicolumn{1}{|l|}{\texttt{#3}} \\ 
+\hline
+\end{tabular}}
+
+\newcommand\litmustestIsmall[3]{{\small
+\begin{tabular}{|@{\,}l@{\,}|}
+\hline
+\multicolumn{1}{|@{\,}l@{\,}|}{\texttt{#1}} \\
+#2
+\multicolumn{1}{|@{\,}l@{\,}|}{\texttt{#3}} \\ 
+\hline
+\end{tabular}}}
+
+\newcommand\litmustestII[3]{
+\begin{tabular}{|l||l|}
+\hline
+\multicolumn{2}{|c|}{\texttt{#1}} \\
+#2
+\multicolumn{2}{|c|}{\texttt{#3}} \\ 
+\hline
+\end{tabular}}
+
+\newcommand\litmustestIIIsmall[3]{
+\small\begin{tabular}{@{}|@{~}l@{~~}||@{~~}l@{~~}||@{~~}l@{~}|@{}}
+\hline
+\multicolumn{3}{@{}|c|@{}}{\texttt{#1}} \\
+#2
+\multicolumn{3}{@{}|c|@{}}{\texttt{#3}} \\ 
+\hline
+\end{tabular}}
+
+\newcommand\Q[1]{{\bf Q#1}}
+\newcommand\GeneralProg{g}
+\newcommand\GeneralExec{\tilde{g}}
+
+% Artifact badge (
+\usepackage[firstpage]{draftwatermark}
+\SetWatermarkText{\hspace*{8in}\raisebox{4.5in}{\includegraphics[scale=0.1]{aec-badge-popl}}}
+\SetWatermarkAngle{0}
+% )
+
+\usepackage{flushend}
+
+\begin{document}
+\toappear{}
+
+\copyrightdoi{TODO}
+\maketitle
+
+\begin{abstract}
+
+A \emph{memory consistency model} (MCM) is the part of a programming
+language or computer architecture specification that defines which
+values can legally be read from shared memory locations. Because MCMs
+take into account various optimisations employed by architectures and
+compilers, they are often complex and counterintuitive, which makes
+them challenging to design and to understand.
+
+We identify four tasks involved in designing and understanding MCMs:
+generating conformance tests, distinguishing two MCMs, checking
+compiler optimisations, and checking compiler mappings. We show that
+all four tasks are instances of a general constraint-satisfaction
+problem to which the solution is either a program or a pair of
+programs. Although this problem is intractable for automatic
+solvers when phrased over programs directly, we show how to solve
+analogous constraints over program \emph{executions}, and then
+construct programs that satisfy the original constraints.
+
+Our technique, which is implemented in the Alloy modelling framework,
+is illustrated on several software- and architecture-level MCMs, both
+axiomatically and operationally defined. We automatically recreate
+several known results, often in a simpler form, including:
+distinctions between variants of the C11 MCM; a failure of the `SC-DRF
+guarantee' in an early C11 draft; that x86 is `multi-copy atomic' and
+Power is not; bugs in common C11 compiler optimisations; and bugs in a
+compiler mapping from OpenCL to AMD-style GPUs. We also use our
+technique to develop and validate a new MCM for NVIDIA GPUs that
+supports a natural mapping from OpenCL.
+
+\end{abstract}
+\category
+{C.1.4}{Processor Architectures}{Parallel processors}
+\category
+{D.3.4}{Programming Languages}{Compilers}
+\category
+{F.3.2}{Logics and Meanings of Programs}{Semantics of Programming
+Languages}
+
+
+\keywords 
+C/C++,
+constraint solving,
+graphics processor (GPU),
+model checking,
+OpenCL,
+program synthesis,
+shared memory concurrency,
+weak memory models
+
+\vspace*{-1mm}
+
+\input{sec_intro.tex}
+\input{sec_exec.tex}
+\input{sec_prog.tex}
+\input{sec_Q2.tex}
+\input{sec_Q3.tex}
+\input{sec_Q4.tex}
+%\input{sec_Q5.tex}
+\input{sec_eval.tex}
+\input{sec_related.tex}
+\input{sec_conc.tex}
+
+% Acknowledgements:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Alastair Donaldson
+% Matthew Parkinson
+% Carsten Fuhs
+% Daniel Jackson?
+% Ali Sezgin?
+% Ganesh Gopalakrishnan?
+% Stefan Kahrs?
+% Luc Maranget
+
+\subsection*{Acknowledgements}
+
+We thank Alastair Donaldson, Carsten Fuhs, Daniel Jackson, Luc
+Maranget, and Matthew Parkinson for their valuable feedback. We
+acknowledge the support of a Research Fellowship from the Royal
+Academy of Engineering and the Lloyd's Register Foundation (Batty), a
+Research Chair from the Royal Academy of Engineering and Imagination
+Technologies (Constantinides), an EPSRC Impact Acceleration Award,
+EPSRC grants EP/I020357/1, EP/K034448/1, and EP/K015168/1, and a gift
+from Intel Corporation.
+
+
+%\clearpage
+\printbibliography
+
+%\clearpage\input{sec_bonus.tex}
+
+
+\end{document}
+

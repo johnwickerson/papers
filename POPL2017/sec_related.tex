@@ -1,0 +1,145 @@
+\section{Related Work}
+\label{sec:related}
+
+Existing tools for MCM reasoning typically take a concurrent program
+as input, and produce all of the executions allowed under a given MCM.
+% Some tools, such as MemSAT~\cite{torlak+10},
+% Nitpick~\cite{blanchette+11}, Nemos~\cite{yang+04}, and
+% SATCheck~\cite{demsky+15}, rely on SAT solvers to discover
+% executions, while others, such as memevents~\cite{sarkar+09},
+% CDSChecker~\cite{norris+13}, CBMC~\cite{alglave+13},
+% \textsf{herd}~\cite{alglave+14}, CppMem~\cite{batty+11},
+% PPCMEM~\cite{sarkar+11}, enumerate executions explicitly.
+Some rely on SAT solvers to discover executions~\cite{torlak+10,
+blanchette+11, yang+04, demsky+15}, while others enumerate them
+explicitly~\cite{sarkar+09, norris+13, alglave+13, alglave+14,
+batty+11, sarkar+11}.
+%
+Our work tackles, in a sense, the `inverse' problem: we start with
+executions that witness interesting MCM properties, and go on to
+produce programs that can give rise to these executions.
+
+\paragraph{Other works tackling \Q1--\Q4}
+
+Regarding \Q1, Darbari et al.~\cite{darbari+16} have automatically
+generated conformance tests for HSA~\cite{hsa-foundation15} from an
+Event-B specification~\cite{abrial+10} of its MCM. Alglave et al.'s
+\textsf{diy} tool~\cite{alglave+10} generates conformance tests for a
+range of MCMs based on \emph{critical cycles}~\cite{shasha+88}. We
+find that our Alloy-based approach has several advantages over
+\textsf{diy} when generating conformance tests. First, we can
+straightforwardly handle custom MCM constructs (e.g., C11 memory
+orders) while \textsf{diy} currently does not. Second, we generate
+only tests needed for conformance, while \textsf{diy} generates
+many more. Third, \textsf{diy} can also miss some tests required to
+distinguish two MCMs (such as the single-address tests we saw in
+\S\ref{sec:Q4_opencl_ptx}), if not guided carefully through
+user-supplied critical cycles.
+
+Regarding \Q2, there is a long history of unifying frameworks for
+comparing MCMs~\cite{adve93, gharachorloo95, higham+97, higham+07,
+shasha+88, collier92}, and of manual proofs that different
+formulations of the same MCM are equivalent~\cite{owens+09,
+mador-haim+12}. On the automation side, Mador-Haim et
+al.~\cite{mador-haim+10} have, like ourselves, used a SAT solver as
+part of a tool for generating litmus tests that distinguish MCMs.
+However, where we use the solver to \emph{generate} tests, they just
+use it to \emph{check} the behaviour of pre-generated tests. Given
+that generating all 6-instruction litmus tests takes them `a few
+minutes' (in 2010), we expect that their approach of explicit
+enumeration would not scale to find the 12-instruction litmus tests
+that are sometimes necessary to distinguish MCMs
+(see~\S\ref{sec:kyndylan}), and which Alloy is able to find in just
+4 minutes.
+
+Prior work has proved (manually) the validity of compiler
+optimisations in non-SC MCMs~\cite{sevcik+08, sevcik11}. Since
+optimisations should not introduce new behaviours, this problem is
+related to monotonicity (\Q3). On the automation side, the Traver
+tool~\cite{burckhardt+10} uses an automated theorem prover to
+verify/falsify a given program transformation against a non-SC
+MCM. Unlike our work, Traver does not support multi-threaded
+optimisations such as linearisation. Chakraborty et al. have built a
+tool~\cite{chakraborty+16} that automatically verifies that LLVM
+optimisations preserve C11 semantics. Like Traver, their tool only
+checks specific \emph{instances} of an optimisation, while our
+approach is able to check optimisations themselves. Morisset et
+al.~\cite{morisset+13} use random testing to validate optimisations
+(albeit those not involving atomic operations) against the C11 MCM;
+Vafeiadis et al.~\cite{vafeiadis+15} then show (manually) that several
+of these optimisations are invalid when atomic operations are
+involved. Our work, in turn, shows how several of Vafeiadis et al.'s
+results can be recreated automatically, often in a simpler form
+(\S\ref{sec:monotonicity}).
+
+Regarding \Q4, prior work has proved (manually) the correctness of
+both compiler mappings~\cite{batty+11, batty+12, wickerson+15a} and
+full compilers~\cite{sevcik+11} in a non-SC context. These proofs all
+involve intensive manual effort, in contrast to our lightweight
+automatic checking, though our checking can of course only guarantee
+the absence of bugs within Alloy's search scope. On the automation
+side, Lustig et al.\ have built tools for finding and verifying
+semantics-preserving translations, but where we focus on
+language/architecture translation, they focus on
+architecture/microarchitecture~\cite{lustig+14} and
+architecture/architecture~\cite{lustig+15} translation. Very recent
+work by Trippel et al.~\cite{trippel+16} has produced a framework that
+can check language/architecture mappings; this works by enumerating
+standard litmus tests and then simulating each one against both the
+language-level MCM and, after compilation, the architecture-level MCM.
+ 
+\paragraph{Reflections on Alloy}
+Alloy is a mature, open-source, and widely-used modelling application,
+and its trio of features -- a modular and object-oriented modelling
+language, an automatic constraint solver, and a graphical visualiser
+-- makes it ideal for MCM development. Although Tab.~\ref{tab:tasks}
+shows several lengthy solving times, those figures are obtained once the
+search space has been set as large as computational feasibility
+allows. Given smaller search spaces, as would be appropriate during
+MCM prototyping, Alloy is suitable for interactive use.
+
+When does Alloy's failure to distinguish two MCMs become a proof that
+they are equivalent? Mador-Haim et al.~\cite{mador-haim+11} prove that
+6 events are enough, but their result applies only to multi-copy
+atomic, architecture-level MCMs (see~\S\ref{sec:Q2_mca}). Momtahan~\cite{momtahan05} gives a result for
+general Alloy models, but imposes strong restrictions on
+quantifiers that our models do not meet.
+
+Ivy~\cite{padon+16} defines a relational modelling language similar to
+Alloy's. Where Alloy ensures the decidability of instance-finding by
+restricting to a finite search scope (which limits its usefulness for
+verification), Ivy instead restricts formulas to the form
+$\exists\bar{x}\ldotp\forall\bar{y}\ldotp\phi$ (for quantifier-free
+$\phi$). If our models can be rephrased to fit into Ivy's restricted
+language, there is the potential not just to `debug' MCM properties,
+but to \emph{verify} them. Another language related to Alloy,
+Rosette~\cite{torlak+13a}, is used in very recent work by Bornholt et
+al.~\cite{bornholt+16} to solve the problem of synthesising a MCM from
+a set of desired litmus test outcomes.
+
+We find that Alloy has several advantages over other frameworks that
+have been used to reason about MCMs, such as Isabelle
+(e.g.,~\cite{batty+11}), Lem~\cite{mulligan+14}
+(e.g.,~\cite{batty+12}), Coq (e.g.,~\cite{vafeiadis+15}), and
+".cat"~\cite{alglave+14} (e.g.,~\cite{batty+16}). A key advantage is
+that the entire memory modelling process can be conducted within
+Alloy: the Alloy modelling language can express programming languages,
+compiler mappings, MCMs, and properties to test, the Alloy Analyzer
+can discover solutions, and the Alloy Visualizer can display solutions
+using theming customised for the model at hand. Alglave et al.'s
+".cat" framework, like Alloy, allows MCM axioms to be expressed in the
+concise propositional relation calculus~\cite{tarski41}, but Alloy
+also supports the more powerful predicate calculus as a fallback. As
+such, Alloy is expressive enough to capture both axiomatic and
+operational MCMs, while remaining sufficiently restrictive that
+fully-automatic property checking is computationally tractable.
+% Unlike ".cat", Alloy does not support recursive definitions (though
+% these can be encoded, \S\ref{sec:fixpoints}), and its operator
+% precedence rules mean that models tend to be cluttered with more
+% parentheses than ".cat" models.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

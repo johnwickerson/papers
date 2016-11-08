@@ -1,0 +1,21 @@
+\section{Conclusion}
+\label{sec:conc}
+
+By solving relational constraints between executions and then lifting
+solutions to litmus tests, Alloy can generate conformance tests,
+compare MCMs (against each other and against general properties like
+SC-DRF and multi-copy atomicity), and check monotonicity and compiler
+mappings. As such, we believe that Alloy should become an essential
+component of the memory modeller's toolbox. Indeed, we are already
+working with two large processor vendors to apply our technique to
+their recent and upcoming architectures and languages. Other future
+work includes applying our technique to more recent MCMs that
+are defined in a non-axiomatic style~\cite{jeffrey+16,
+pichon-pharabod+16, flur+16, kang+17}.
+
+Although Alloy's lightweight, automatic approach cannot give the same
+universal assurance as fully mechanised theorems, we have found it
+invaluable in practice, because even (and perhaps \emph{especially})
+in the complex and counterintuitive world of non-SC MCMs, Jackson's
+maxim~\cite{jackson12a} holds true: \emph{Most bugs have small
+counterexamples}.

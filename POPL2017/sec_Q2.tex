@@ -1,0 +1,350 @@
+\section{Application: Comparing MCMs (\Q2)}
+\label{sec:discrep}
+
+In this section, we use Alloy to generate litmus tests that
+distinguish three proposed variants of the C11 MCM
+(\S\ref{sec:Q2_c11_sra_simp}, \S\ref{sec:kyndylan},
+\S\ref{sec:Q2_c11_simp_orig}). Such distinguishing tests, particularly
+the \emph{simplest} distinguishing tests, are difficult to find by
+hand, but are very useful for illustrating the proposed changes. We go
+on to check two generic properties of MCMs -- multi-copy atomicity
+(\S\ref{sec:Q2_mca}) and SC-DRF (\S\ref{sec:scdrf}) -- by encoding the
+properties as MCMs themselves and comparing them against software- and
+architecture-level MCMs.
+
+\subsection{Strong Release/Acquire Semantics in C11}
+\label{sec:Q2_c11_sra_simp}
+Lahav et al. have proposed a stronger semantics for release/acquire
+atomics~\cite{lahav+16}. For the release/acquire fragment of C11 (no
+non-atomics and no relaxed or SC atomics), their semantics amounts to
+adding the axiom $\acyclic(sb \cup co \cup rf)$. We used Alloy to
+compare their MCM, which we call \mm{C11-SRA}, to \mm{C11} over the
+release/acquire fragment.
+
+% Alloy
+% demonstrated that the classic `2+2W' litmus test~\cite{?}
+% \begin{center}
+% \begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+% \node (a) at (0,0.8) {$\evW{"rel"}{"x"}{1}$};
+% \node (b) at (0,0) {$\evW{"rel"}{"y"}{2}$};
+% \node (c) at (2.5,0.8) {$\evW{"rel"}{"y"}{1}$};
+% \node (d) at (2.5,0) {$\evW{"rel"}{"x"}{2}$};
+% \draw[edgemo] (b) to [auto, pos=0.8] node {$co$} (c);
+% \draw[edgemo] (d) to [auto, swap, pos=0.8] node {$co$} (a);
+% \draw[edgesb] (a) to [auto] node {$sb$} (b);
+% \draw[edgesb] (c) to [auto] node {$sb$} (d);
+% \node[sthd, fit=(a)(b)] {};
+% \node[sthd, fit=(c)(d)] {};
+% \node at (5.0,0.4) {$\litmustestIsmall{atomic\_int x=0,y=0;}{
+% \quad\texttt{x.store(1,REL);} \\
+% \quad\texttt{y.store(2,REL);} \\[-1.6mm]
+% \quad\rule{22mm}{0.4pt} \\[-2.7mm]
+% \quad\rule{22mm}{0.4pt} \\
+% \quad\texttt{y.store(1,REL);} \\
+% \quad\texttt{x.store(2,REL);} \\
+% }{x==1 \&\& y==1}$};
+% \end{tikzpicture}
+% \end{center}
+% %
+% can pass under \mm{C11-Simp} but not under \mm{C11-SRA} -- just as
+% Lahav et al. report. We also performed the comparison under the
+% additional constraint that the postcondition should not need to refer
+% to shared locations, only to registers -- this corresponds to a
+% technical requirement in Lahav et al.'s work. The example that Lahav
+% et al. provide in this context is a 10-event
+% execution~\cite[Fig.~5]{lahav+16}; under the same constraints, Alloy
+% found a distinguishing execution with just six events
+Lahav et al. provide a 10-event (and 4-location) execution that
+distinguishes the MCMs~\cite[Fig.~5]{lahav+16}. Alloy, on the other
+hand, found a execution that requires just 6 events (and 2 locations)
+and serves the same purpose.\footnote{Lahav et al. impose an additional technical requirement
+that postconditions should not need to refer to shared locations (only
+to registers), which rules out the even-simpler `2+2W' litmus
+test~\cite{sarkar+11}.}
+%
+\begin{center}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0.8) {$\evW{\morel}{"x"}{1}$};
+\node (b) at (0,0) {$\evW{\morel}{"y"}{2}$};
+\node (c) at (0,-0.8) {$\evR{\moacq}{"y"}{1}$};
+\node (d) at (2.5,0.8) {$\evW{\morel}{"y"}{1}$};
+\node (e) at (2.5,0) {$\evW{\morel}{"x"}{2}$};
+\node (f) at (2.5,-0.8) {$\evR{\moacq}{"x"}{1}$};
+\draw[edgemo] (b) to [auto, pos=0.8] node {$co$} (d);
+\draw[edgemo] (e) to [auto, swap, pos=0.8] node {$co$} (a);
+\draw[edgerf] (a) to [auto, swap, pos=0.7] node {$rf$} (f);
+\draw[edgerf] (d) to [auto, pos=0.7] node {$rf$} (c);
+\draw[edgesb] (a) to [auto] node {$sb$} (b);
+\draw[edgesb] (b) to [auto] node {$sb$} (c);
+\draw[edgesb] (d) to [auto] node {$sb$} (e);
+\draw[edgesb] (e) to [auto] node {$sb$} (f);
+\node[sthd, fit=(a)(b)(c)] {};
+\node[sthd, fit=(d)(e)(f)] {};
+
+\node at (5.0,-0.0) {$\litmustestIsmall{atomic\_int x=0,y=0;}{
+\quad\texttt{x.store(1,\morel);} \\
+\quad\texttt{y.store(2,\morel);} \\
+\quad\texttt{r0=y.load(\moacq);} \\[-1.6mm]
+\quad\rule{22mm}{0.4pt} \\[-2.7mm]
+\quad\rule{22mm}{0.4pt} \\
+\quad\texttt{y.store(1,\morel);} \\
+\quad\texttt{x.store(2,\morel);} \\
+\quad\texttt{r1=x.load(\moacq);} \\
+}{r0==1 \&\& r1==1}$};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Forbidding Reading/Synchronisation Cycles in C11}
+\label{sec:kyndylan}
+
+Nienhuis et al.~\cite[Fig.~12]{nienhuis+16} have suggested
+strengthening the C11 MCM with the axiom $\acyclic(sw\cup rf)$. Let us
+call that MCM \mm{C11-SwRf}. We used Alloy to search for litmus tests
+that could witness such a change, and discovered a solution requiring
+12 events and 6 threads
+%
+\begin{equation*}
+\small
+\begin{tikzpicture}[inner sep=0.5mm, baseline=(a.base)]
+\node (a) at (0.0,1.6) {$\evRMW{\morlx}{"y"}{4}{5}$};
+\node (b) at (0.0,0.8) {$\evF{\morel}$};
+\node (c) at (0.0,0.0) {$\evW{\morlx}{"x"}{1}$};
+\node (d) at (2.1,1.6) {$\evRMW{\morel}{"y"}{2}{3}$};
+\node (e) at (2.1,0.8) {$\evW{\morlx}{"y"}{4}$};
+\node (f) at (2.1,0.0) {$\evRMW{\moacq}{"x"}{1}{2}$};
+\node (g) at (4.2,1.6) {$\evRMW{\morel}{"x"}{2}{3}$};
+\node (h) at (4.2,0.8) {$\evW{\mosc}{"x"}{4}$};
+\node (i) at (4.2,0.0) {$\evRMW{\mosc}{"y"}{1}{2}$};
+\node (j) at (6.3,1.6) {$\evRMW{\morel}{"x"}{4}{5}$};
+\node (k) at (6.3,0.8) {$\evF{\moar}$};
+\node (l) at (6.3,0.0) {$\evW{\morlx}{"y"}{1}$};
+\draw[edgesb] (a) to [auto,pos=0.4] node {$sb$} (b);
+\draw[edgesb] (b) to [auto,pos=0.4] node {$sb$} (c);
+\draw[edgesb, shift left=0.5mm] (d) to [auto,pos=0.4] node {$sb$} (e);
+\draw[edgesb, shift right=0.5mm] (g) to [auto,swap,pos=0.4] node {$sb$} (h);
+\draw[edgesb] (j) to [auto,pos=0.4] node {$sb$} (k);
+\draw[edgesb] (k) to [auto,pos=0.4] node {$sb$} (l);
+\draw[edgemo, shift right=0.5mm] (d) to [auto,swap] node {$co$} (e);
+\draw[edgemo, shift left=0.5mm] (g) to [auto] node {$co$} (h);
+\draw[edgemo,shift left=0.5mm] (e) to [auto] node {$co$} (a);
+\draw[edgerf,shift right=0.5mm] (e) to [auto,swap] node {$rf$} (a);
+\draw[edgemo,shift right=0.5mm] (c) to [auto,swap, inner sep=1mm] node {$co$} (f);
+\draw[edgerf,shift left=0.5mm] (c) to [auto] node {$rf$} (f);
+\draw[edgemo,shift right=0.5mm] (f) to [auto,swap,pos=0.2] node {$co$} ([xshift=-5mm]g.south);
+\draw[edgerf,shift left=0.5mm] (f) to [auto,pos=0.1] node {$rf$} ([xshift=-5mm]g.south);
+\draw[edgemo,shift right=0.5mm] (h) to [auto,swap] node {$co$} (j);
+\draw[edgerf,shift left=0.5mm] (h) to [auto] node {$rf$} (j);
+\draw[edgemo,shift left=0.5mm] (l) to [auto, inner sep=1mm] node {$co$} (i);
+\draw[edgerf,shift right=0.5mm] (l) to [auto,swap] node {$rf$} (i);
+\draw[edgemo,shift left=0.5mm] (i) to [auto,pos=0.2] node {$co$} ([xshift=5mm]d.south);
+\draw[edgerf,shift right=0.5mm] (i) to [auto,swap,pos=0.1] node {$rf$} ([xshift=5mm]d.south);
+\node[sthd_qtight, fit=(a)(b)(c)] {};
+\node[sthd_qtight, fit=(d)(e)] {};
+\node[sthd_qtight, fit=(f)] {};
+\node[sthd_qtight, fit=(g)(h)] {};
+\node[sthd_qtight, fit=(i)] {};
+\node[sthd_qtight, fit=(j)(k)(l)] {};
+\end{tikzpicture}
+\end{equation*}
+%
+that is virtually identical to the one provided by Nienhuis et al., if
+a little less symmetrical. We sought smaller solutions, and found none
+with fewer than 8 events that could distinguish \mm{C11-SwRf} from
+\mm{C11}. For executions with 8 to 11 events, the SAT solver could not
+return a result in a reasonable time.
+
+\subsection{Simplifying the SC Axioms in C11}
+\label{sec:Q2_c11_simp_orig}
+Batty et al. have proposed a change to the C11 consistency axioms that
+enables them to be simplified, and also avoids the need for a total
+order, $S$, over all SC events~\cite{batty+16}. Having already
+incorporated their proposal in our Fig.~\ref{fig:c11_predicates}, let
+us call the original MCM \mm{C11-Orig}.
+
+Batty et al. present a litmus test to distinguish \mm{C11}
+from \mm{C11-Orig}, which uses 7 instructions across 4
+threads~\cite[Example~1]{batty+16}. Alloy, on the other hand, found
+one (below) that needs only 5 instructions and 3 threads.
+%
+\begin{equation*}
+\begin{tikzpicture}[inner sep=1pt]
+\node[event, anchor=west](a) at (0.2,2) 
+{$\evW{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](b) at (2,2) 
+{$\evRMW{\mosc}{"x"}{1}{2}$};
+
+\node[event, anchor=west](c) at (2,1.2) 
+{$\evR{\mosc}{"y"}{0}$};
+
+\node[event, anchor=west](d) at (0.2,1.2) 
+{$\evW{\mosc}{"y"}{1}$};
+
+\node[event, anchor=west](e) at (0.2,0.4) 
+{$\evR{\mosc}{"x"}{1}$};
+
+\foreach \i/\j in {b/c, d/e}
+\draw[edgeS] ([xshift=5mm]\i.south west) to[auto,pos=0.4]
+node{$S$} ([xshift=5mm]\j.north west -| \i.south west);
+
+\foreach \i/\j in {b/c, d/e}
+\draw[edgesb] ([xshift=4mm]\i.south west) to[auto,swap,pos=0.4]
+node{$sb$} ([xshift=4mm]\j.north west -| \i.south west);
+
+\draw[edgeS] (c) to[auto,pos=0.5] node{$S$} (d);
+
+\draw[edgemo] ([yshift=.5mm]a.east) to[auto] node{$co$} ([yshift=.5mm]b.west);
+
+\draw[edgerf, overlay] (a.south west) to[auto, bend right=20, pos=0.05] node{$rf$}
+(e.north west);
+
+\draw[edgerf] ([yshift=-.5mm]a.east) to[auto, swap] node{$rf$}
+([yshift=-.5mm]b.west);
+
+\node[sthd, fit=(a)] {};
+\node[sthd, fit=(b)(c)] {};
+\node[sthd, fit=(d)(e)] {};
+
+\node at (6.4,1.3) {$\litmustestIsmall{atomic\_int x=0,y=0;}{
+\quad\texttt{x.store(1,\morlx);} \\[-1.6mm]
+\quad\rule{30.5mm}{0.4pt} \\[-2.7mm]
+\quad\rule{30.5mm}{0.4pt} \\
+\quad\texttt{r0=x.cas(1,2,\mosc,\morlx);} \\
+\quad\texttt{r1=y.load(\mosc);} \\[-1.6mm]
+\quad\rule{30.5mm}{0.4pt} \\[-2.7mm]
+\quad\rule{30.5mm}{0.4pt} \\
+\quad\texttt{y.store(1,\mosc);} \\
+\quad\texttt{r2=x.load(\mosc);} \\
+}{r0==true\,\&\&\,r1==0\,\&\&\,r2==1}$};
+\end{tikzpicture}
+\end{equation*}
+%
+%
+% \begin{equation*}
+% \litmustestIIIsmall{atomic\_int x,y=0;}{
+%    \texttt{x.store(1,RLX);} 
+%  & \texttt{r0=x.cas(1,2,SC,RLX);} 
+%  & \texttt{y.store(1,SC);} \\
+%  & \texttt{r1=y.load(SC);} 
+%  & \texttt{r2=x.load(SC);} 
+% \\
+% }{r0==true \&\& r1==0 \&\& r2==1}
+% \end{equation*}
+%
+
+\subsection{Multi-copy atomicity}
+\label{sec:Q2_mca}
+% Cite peter?
+The property of \emph{multi-copy atomicity}\footnote{This is also
+known as \emph{store atomicity}~\cite{sorin+11} or \emph{write
+atomicity}~\cite{adve+96}.} (MCA)~\cite{collier92} ensures that, in
+the absence of thread-local reordering, different threads cannot
+observe writes in conflicting orders -- i.e., there is a single copy
+of the memory that serialises all writes. The canonical MCA violation
+is given by the IRIW test~\cite{boehm+08} (below) where thread-local
+reordering has been disabled by inducing `preserved program order'
+($ppo$) edges, perhaps using dependencies or fences. That the final
+reads observe $0$ betrays a disagreement in the order the writes
+occurred:
+%
+\begin{equation}
+\label{eq:iriw}
+\begin{tikzpicture}[inner sep=0.5mm, baseline=(a.base)]
+\node (a) at (0.0,1.6) {$\evW{}{"y"}{1}$};
+\node (b) at (2.1,1.6) {$\evR{}{"y"}{1}$};
+\node (c) at (2.1,0.8) {$\evR{}{"x"}{0}$};
+\node (d) at (4.2,1.6) {$\evR{}{"x"}{1}$};
+\node (e) at (4.2,0.8) {$\evR{}{"y"}{0}$};
+\node (f) at (6.3,1.6) {$\evW{}{"x"}{1}$};
+\draw[edgesb] (b) to [auto,pos=0.4] node {$ppo$} (c);
+\draw[edgesb] (d) to [auto,pos=0.4] node {$ppo$} (e);
+%\draw[edgesb, shift right=0.5mm] (g) to [auto,swap,pos=0.4] node {$sb$} (h);
+\draw[edgerf,shift right=0.5mm] (a) to [auto,swap] node {$rf$} (b);
+\draw[edgerf,shift left=0.5mm] (f) to [auto] node {$rf$} (d);
+\node[sthd, fit=(a)] {};
+\node[sthd, fit=(b)(c)] {};
+\node[sthd, fit=(d)(e)] {};
+\node[sthd, fit=(f)] {};
+\end{tikzpicture}
+\end{equation}
+
+\begin{figure}[t]
+\begin{myFrame}{$consistent_{\rm MCA}(ppo)$}
+\begin{mathpar}
+\labelb{eq:mca:uniproc}~
+\acyclic((sb \cap \sloc) \cup co)
+\and
+\labelb{eq:mca:wo}~ 
+\acyclic(wo(ppo))
+\end{mathpar}
+\end{myFrame}
+\begin{mathpar}
+wo(ppo) \eqdef 
+    (((rfe \join ppo \join rfe^{-1}) - \id ) \join co) \cup (rfe \join ppo \join fr_{\rm init})
+\end{mathpar}
+\caption{Multi-copy atomicity as an MCM}
+\label{fig:mca_predicates}
+\end{figure}
+
+We formalise MCA -- for the first time in the axiomatic style -- in
+Fig.~\ref{fig:mca_predicates}. The model comprises write/write
+coherence~\refb{eq:mca:uniproc}~\cite{sorin+11} and the acyclicity of
+the \emph{write order} relation, $wo$~\refb{eq:mca:wo}. Write order
+captures the intuition that if two reads, say $r_1$ and $r_2$ (with
+$(r_1,r_2)\in ppo$), observe two writes, say $w_1$ and $w_2$
+respectively, then any write $co$-later than $w_2$ must follow $w_1$
+in the single copy of memory. The $wo$ relation is the union of two
+cases: in the first, both reads observe write events, and in the
+second, one reads from the initial value (reusing our definition of
+$fr_{\rm init}$ from Def.~\ref{def:fromread}). Note that MCA is
+parameterised by the given model's $ppo$.\footnote{We have an
+alternative formulation for happens-before-based models.}
+
+With this formal definition of MCA, we can seek executions allowed by
+a given MCM but disallowed by MCA. We tested x86 and Power, and as
+expected, Power does not guarantee MCA (Alloy finds a counterexample
+similar to \eqref{eq:iriw}) but x86 does.
+
+
+\subsection{Seeking SC-DRF Violations}
+\label{sec:scdrf}
+
+We used Alloy to seek violations of the SC-DRF
+guarantee~\cite{adve+90} in an early draft of the C11
+MCM~\cite{c++11draft}. The SC-DRF guarantee, in the C11 context, states
+that if a program is race-free and contains no non-SC atomic operations,
+then it has only SC semantics.
+
+\begin{figure}[t]
+\begin{myFrame}{$consistent_{\mm{SC}}$}
+\begin{mathpar}
+\labelb{eq:sc}~
+acyclic(rf \cup co \cup fr \cup sb)
+\end{mathpar}
+\end{myFrame}
+\caption{The \mm{SC} MCM (following Shasha et al.~\cite{shasha+88})}
+\label{fig:sc}
+\end{figure}
+
+We sought an execution $X$ that is dead (so that its corresponding
+litmus test is race-free), uses no non-SC atomics, and is consistent
+under the (draft) C11 MCM but inconsistent under \mm{SC}:
+\[
+\field{X}{A} \subseteq \field{X}{sc}
+\wedge X\in dead_{\mm{C11}}
+\cap consistent_{\mm{C11-Draft}} - consistent_{\mm{SC}}
+\]
+where the \mm{SC} MCM is characterised in Fig.~\ref{fig:sc} and
+\mm{C11-Draft} has all the axioms listed by Batty et
+al.~\cite[Def.~11]{batty+16}, minus their `S4' axiom. Alloy found an
+example similar to that reported by Batty et al.~\cite[\S4,
+\emph{Sequential consistency for SC atomics}]{batty+11}. The non-SC
+execution is consistent under \mm{C11-Draft} because no rule forbids
+SC reads to observe initial writes. The `S4' axiom was
+added~\cite[\S2.7]{batty+11} to fix exactly this issue.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

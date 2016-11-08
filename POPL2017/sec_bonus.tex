@@ -1,0 +1,840 @@
+\appendix
+\section{Bonus stuff, probably won't fit in}
+
+\subsection{Monotonicity violation in C11}
+Alloy finds the following pair of 6-event executions that witness a
+monotonicity violation in C11:
+\begin{equation*}
+\begin{tikzpicture}[inner sep=1pt]
+\node[event, anchor=west](a) at (1,2.5) 
+{$\evR{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](b) at (1,1.5) 
+{$\evR{"na"}{"a"}{1}$};
+
+\node[event, anchor=west](c) at (1,0.5) 
+{$\evW{\mosc}{"y"}{1}$};
+
+\node[event, anchor=west](d) at (2.7,2.5) 
+{$\evR{\morlx}{"y"}{1}$};
+
+\node[event, anchor=west](e) at (2.7,1.5) 
+{$\evW{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](f) at (-0.5,2) 
+{$\evW{"na"}{"a"}{1}$};
+
+\node[event, anchor=west](a') at (5,2) 
+{$\evR{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](b') at (5,1) 
+{$\evR{"na"}{"a"}{1}$};
+
+\node[event, anchor=west](c') at (5,0) 
+{$\evW{\mosc}{"y"}{1}$};
+
+\node[event, anchor=west](d') at (6.5,2) 
+{$\evR{\morlx}{"y"}{1}$};
+
+\node[event, anchor=west](e') at (6.5,1) 
+{$\evW{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](f') at (5,3) 
+{$\evW{"na"}{"a"}{1}$};
+
+\foreach \i/\j in {a/b, b/c, d/e, a'/b', b'/c', d'/e'} {
+\draw[edgesb] ([xshift=5mm]\i.south west) to[auto,swap,pos=0.4]
+node{$sb$} ([xshift=5mm]\j.north west -| \i.south west);
+\draw[edgesb] ([xshift=6mm]\i.south west) to[auto,pos=0.4]
+node{$cd$} ([xshift=6mm]\j.north west -| \i.south west);
+}
+\draw[edgesb] ([xshift=5mm]f'.south west) to[auto,swap,pos=0.4]
+node{$sb$} ([xshift=5mm]a'.north west -| a'.south west);
+
+\draw[edgerf] (e) to[auto, swap, pos=0.7] node{$rf$} (a);
+\draw[edgerf] (c) to[auto, pos=0.3, swap, out=30, in=210] node{$rf$} (d);
+\draw[edgerf] (f) to[auto, pos=0.4] node{$rf$} (b);
+
+\draw[edgerf] (e') to[auto, swap, pos=0.7] node{$rf$} (a');
+\draw[edgerf] (c') to[auto, swap, pos=0.3, out=30, in=210] node{$rf$} (d');
+\draw[edgerf] (f') to[auto, swap, pos=0.2, bend right=70] node{$rf$} (b');
+
+\draw[edgepi] (a) to[auto,swap,pos=0.8] node{$\pi$} (a');
+\draw[edgepi] (b) to[auto,swap,pos=0.8] node{$\pi$} (b');
+\draw[edgepi] (c) to[auto] node{$\pi$} (c');
+\draw[edgepi] (d) to[auto, pos=0.15] node{$\pi$} (d');
+\draw[edgepi] (e) to[auto, pos=0.1] node{$\pi$} (e');
+\draw[edgepi] (f) to[auto, pos=0.7,out=45,in=180] node{$\pi$} (f');
+
+\node[sthd, fit=(f)] {};
+\node[sthd, fit=(a)(b)(c)] {};
+\node[sthd, fit=(d)(e)] {};
+\node[sthd, fit=(f')(a')(b')(c')] {};
+\node[sthd, fit=(d')(e')] {};
+\end{tikzpicture}
+\end{equation*}
+where left-hand execution is inconsistent (because the write to "a"
+does not happen-before the read that observes its value) but the
+right-hand execution (obtained by sequentialising two of the threads)
+is consistent (since "a"'s write now happens-before its read). This is
+essentially the same execution as that discovered by Vafeiadis et
+al.~\cite[Fig.~1]{vafeiadis+15}; it is just a little less elegant:
+Alloy chose the write to "y" to be sequentially-consistent when a
+relaxed write would suffice.
+
+\subsection{Generating monotonic programs} We rely on the following
+property of our program-generating function:
+\[
+\stack{
+\text{if}~"strengthen"(X, Y, rf, co) \\
+\text{then}~ltest(X,rf,co) \sqsubseteq ltest(Y,rf,co)
+}
+\]
+The $\sqsubseteq$ relation is defined as the smallest partial order
+that is compatible with the syntax of litmus tests and satisfies:
+\begin{mathpar}
+\inferrule{ }{\mathbf{st}(x,v,\mathbf{rel}) \sqsubseteq \mathbf{st}(x,v,\mathbf{rlx})}
+\and
+\inferrule{ }{\mathbf{st}(x,v,\mathbf{sc}) \sqsubseteq \mathbf{st}(x,v,\mathbf{rel})}
+\and
+\inferrule{ }{\mathbf{ld}(r,x,\mathbf{sc}) \sqsubseteq \mathbf{ld}(r,x,\mathbf{acq})}
+\and
+\inferrule{ }{\mathbf{ld}(r,x,\mathbf{acq}) \sqsubseteq \mathbf{ld}(r,x,\mathbf{rlx})}
+\and
+\inferrule{ }{\mathbf{xc}(r,x,v,\mathbf{sc}) \sqsubseteq \mathbf{xc}(r,x,v,\mathbf{ar})}
+\and
+\inferrule{ }{\mathbf{xc}(r,x,v,\mathbf{ar}) \sqsubseteq \mathbf{xc}(r,x,v,\mathbf{acq})}
+\and
+\inferrule{ }{\mathbf{xc}(r,x,v,\mathbf{ar}) \sqsubseteq \mathbf{xc}(r,x,v,\mathbf{rel})}
+\and
+\inferrule{ }{\mathbf{xc}(r,x,v,\mathbf{acq}) \sqsubseteq \mathbf{xc}(r,x,v,\mathbf{rlx})}
+\and
+\inferrule{ }{\mathbf{xc}(r,x,v,\mathbf{rel}) \sqsubseteq \mathbf{xc}(r,x,v,\mathbf{rlx})}
+\and
+\inferrule{ }{C_1 ; C_2 \sqsubseteq C_1 + C_2}
+\and
+\inferrule{ }{C_1 ; C_2 \sqsubseteq C_1 \parallel C_2}
+\end{mathpar}
+
+\subsection{Compiling C11 to x86}
+A mapping $\pi$ implements the C11-to-x86 compilation scheme if it
+satisfies the following constraints:
+
+\paragraph{\upshape $"mapping"(\pi,X,Y)$:}
+\begin{mathpar}
+\labelb{eq:c11x86:pibij}~
+(\pi^{-1}\join\pi) = \stor{Y."ev"}
+\and
+\labelb{eq:c11x86:sb}~
+(X."sb" \join \pi) = (\pi \join Y."sb")
+\and
+\labelb{eq:c11x86:sthd}~
+(X.\sthd \join \pi) = (\pi\join Y.\sthd)
+\and
+\labelb{eq:c11x86:sloc}~
+(X.\sloc \join \pi) = (\pi\join Y.\sloc)
+\and
+\labelb{eq:c11x86:cd}~
+(X."cd" \join \pi) = (\pi\join Y."cd")
+\and
+\labelb{eq:c11x86:ad}~
+(X."ad" \join \pi) = (\pi\join Y."ad")
+\and
+\labelb{eq:c11x86:dd}~
+(X."dd" \join \pi) = (\pi\join Y."dd")
+\and
+\labelb{eq:c11x86:r}~
+\pi (X."R") = Y."R"
+\and 
+\labelb{eq:c11x86:w}~
+\pi(X."W") = Y."W"
+\and
+\labelb{eq:c11x86:a}~
+\pi(X."sc") = Y."A"
+\and 
+\labelb{eq:c11x86:scf}~
+\pi(X."F" \cap X."sc") = Y."F" 
+\and
+\labelb{eq:c11x86:notscf}~
+\pi(X."F" - X."sc") \ncap Y."F" 
+\end{mathpar}
+
+This mapping is one-to-one~\refb{eq:c11x86:pibij}. It preserves
+sequenced-before~\refb{eq:c11x86:sb}, threads~\refb{eq:c11x86:sthd},
+locations~\refb{eq:c11x86:sloc}, and
+dependencies~\refb{eq:c11x86:cd}~\refb{eq:c11x86:ad}~\refb{eq:c11x86:dd}.
+Reads are mapped to reads~\refb{eq:c11x86:r} and writes are mapped to
+writes~\refb{eq:c11x86:w}. SC events are mapped to atomic
+events~\refb{eq:c11x86:a}. SC fences are mapped to
+fences~\refb{eq:c11x86:scf}, and non-SC fences are mapped to
+no-ops~\refb{eq:c11x86:notscf}.
+
+
+\subsection{Generating executable code}
+
+\begin{figure}
+\[
+\renewcommand\arraystretch{1.2}
+\begin{array}{@{}r@{~~}c@{~~}l@{}}
+\cof{x} &=& \C{\&} x \\
+\cof{v} &=& v \\
+\cof{e + 0 \times r} &=& \C{(} \cof{e} \C{+0*} r \C{)} \\
+\cof{\mathbf{st}(e_x, e_v, \mathrm{None})} &=& \C{*} \cof{e_x} \C{=} \cof{e_v} 
+\\
+\cof{\mathbf{st}(e_x, e_v, \mathrm{Some}~mo)} &=& \\
+\multicolumn{3}{@{}r@{}}{
+\C{(atomic\_store((atomic\_int*)} \cof{e_x} \C{,}
+\cof{e_v} \C{,} mo \C{),0)}} 
+\\
+\cof{\mathbf{ld}(r,e_x,\mathrm{None})} &=& r \C{=((int*)}\cof{e_x} \C{)} \\
+\cof{\mathbf{ld}(r,e_x,\mathrm{Some}~mo)} &=& r \C{=atomic\_load(}
+\cof{e_x} \C{,} mo \C{)} 
+\\
+\cof{\mathbf{cas}(r,e_x,v,e_{v'},\mathrm{Some}~mo)} &=& \\
+\multicolumn{3}{@{}r@{}}{\stack{r \C{=(atomic\_compare\_exchange\_strong(} \\\quad \C{(atomic\_int*)}
+\cof{e_x} \C{,} v \C{,} \cof{e_{v'}} \C{,} mo \C{,relaxed))?} v \C{:0}}} 
+\\
+\cof{\mathbf{fence}(\mathrm{Some}~mo)} &=& \C{atomic\_thread\_fence(} mo \C{)}
+\\
+\cof{\mathbf{if}~r = v~\mathbf{then}~a} &=& r\C{==}v\C{?}\cof{a}\C{:0}
+\\
+\cof{C_1 + C_2} &=& \cof{C_1}\C{+}\cof{C_2} 
+\\
+\cof{C_1 \join C_2} &=& \C{(}\cof{C_1}\C{,}\cof{C_2}\C{)}
+\end{array}
+\]
+\caption{Generating executable C code \JWComment{Needs checking}}
+\label{fig:generating_C}
+\end{figure}
+
+It is quite straightforward to convert from a term in $\Prog{\tau}$ to
+a piece of executable C11 or assembly code. For example,
+Fig.~\ref{fig:generating_C} demonstrates how we generate C11 code.
+
+\subsection{Monotonicity results for x86} 
+To extend the $strengthen$ relation to
+the x86 setting, we add the constraint $\field{X}{locked} \subseteq
+\field{Y}{locked}$ -- this allows the stronger execution to have
+additional `locked' events. We used Alloy to search for monotonicity
+violations in the x86-TSO model, as formalised by Alglave et
+al.~\cite{alglave+14} -- that is, we sought solutions for
+$\GeneralExec(\mm{x86-TSO},\mm{x86-TSO}, strengthen_{\rm x86})$. Alloy
+discovered the following pair of executions:
+%
+\begin{equation*}
+\begin{tikzpicture}[inner sep=1pt]
+\node[event, anchor=west](a) at (2,2) 
+{\evtlbl{$a$}$\evW{}{"x"}{1}$};
+
+\node[event, anchor=west](b) at (2,1) 
+{\evtlbl{$b$}$\evR{"lock"}{"y"}{0}$};
+
+\node[event, anchor=west](c) at (4,2) 
+{\evtlbl{$c$}$\evW{"lock"}{"y"}{1}$};
+
+\node[event, anchor=west](d) at (4,1) 
+{\evtlbl{$d$}$\evR{}{"x"}{0}$};
+
+\node[event, anchor=west](a') at (6.5,2) 
+{\evtlbl{$a'$}$\evW{}{"x"}{1}$};
+
+\node[event, anchor=west](b') at (6.5,1) 
+{\evtlbl{$b'$}$\evR{"lock"}{"y"}{0}$};
+
+\node[event, anchor=west](c') at (8.5,2) 
+{\evtlbl{$c'$}$\evW{"lock"}{"y"}{1}$};
+
+\node[event, anchor=west](d') at (8.5,1) 
+{\evtlbl{$d'$}$\evR{"lock"}{"x"}{0}$};
+
+\foreach \i/\j in {a/b, a'/b',c/d, c'/d'}
+\draw[edgesb] ([xshift=8mm]\i.south west) to[auto,swap,pos=0.4]
+node{$sb$} ([xshift=8mm]\j.north west -| \i.south west);
+
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)(d)] {};
+\node[sthd, fit=(a')(b')] {};
+\node[sthd, fit=(c')(d')] {};
+\end{tikzpicture}
+\end{equation*}
+%
+The left-hand execution is forbidden because a write cannot be
+reordered with a later read if one of them is locked. The right-hand
+execution is allowed because of a bug in Alglave et al.'s
+formalisation of \mm{x86-TSO}: they neglect to forbid write/read
+reordering when both the write ($c'$) and the read ($d'$) are
+locked. Upon amending their model and rerunning our test, Alloy could
+find no further monotonicity violations.
+
+\subsection{Amusing remark about Prolog}
+
+\begin{remark}Recalling Prolog's `green cuts' and `red
+cuts'~\cite{bratko86}, we could describe a postcondition as `red' if
+it rules out an execution that is consistent and racy, and `green'
+otherwise. Herd and cppmem allow users the freedom to generate red
+postconditions, for pedagogical reasons. In our work, we must only
+generate green postconditions. \end{remark}
+
+\subsection{Compiling C11 to Power}
+
+\begin{figure}[t]
+\begin{myFrame}{$compile_{\rm C11/PPC}(\pi,X,Y)$}
+\begin{mathpar}
+\labelb{eq:c11ppc:pi1}~
+\stor{\field{X}{E}} = (\pi \join \pi^{-1})
+\and
+\labelb{eq:c11ppc:pi2}~
+\stor{\field{Y}{E}} \subseteq (\pi^{-1} \join \pi)
+\and
+\labelb{eq:c11ppc:sb}~
+\stack{
+\forall (e_1,e_2)\in \field{X}{sb} \ldotp (\{e_1\}\join \pi) \times
+(\{e_2\}\join\pi) \subseteq \field{Y}{sb}
+}
+\and
+\labelb{eq:c11ppc:sloc}~
+\field{X}{sloc} = \pi \join \field{Y}{sloc} \join \pi^{-1}
+\and
+\labelb{eq:c11ppc:sthd}~
+\field{Y}{sthd} = \pi^{-1} \join \field{X}{sthd} \join \pi
+\and
+\labelb{eq:c11ppc:rf}~
+\field{X}{rf} = \pi \join \field{Y}{rf} \join \pi^{-1}
+\and
+\labelb{eq:c11ppc:co}~
+\field{X}{co} = \pi \join \field{Y}{co} \join \pi^{-1}
+\and
+\labelb{eq:c11ppc:Rrlx}~
+\forall e\in \field{X}{R} - \field{X}{W} - \field{X}{acq}\ldotp
+  \exists e' \in \field{Y}{R} \ldotp 
+  (\{e\}\join\pi)  = \{e'\} 
+\and
+\labelb{eq:c11ppc:Racq}~
+\stack{\forall e\in \field{X}{R} \cap \field{X}{acq} - \field{X}{W} -
+\field{X}{sc}\ldotp {}\\{}
+  \exists e'_1 \in \field{Y}{R}\ldotp 
+  \exists e'_2 \in \field{Y}{isync}\ldotp
+  (\{e\}\join\pi)  = \{e'_1\}\uplus\{e'_2\} \wedge {}\\{}
+  (e'_1,e'_2) \in imm(\field{Y}{sb}) \cap \field{Y}{cd} -
+  \field{Y}{ad} - \field{Y}{dd} \wedge {}\\{}
+  (\forall e'\ldotp (e'_1,e') \in
+  \field{Y}{sb} \Rightarrow (e'_1,e') \in \field{Y}{cd})}
+\and
+\labelb{eq:c11ppc:Rsc}~
+\labelb{eq:c11ppc:Wrlx}~
+\labelb{eq:c11ppc:Wrel}~
+\labelb{eq:c11ppc:Wsc}~
+\labelb{eq:c11ppc:RMWrlx}~
+\labelb{eq:c11ppc:RMWacq}~
+\labelb{eq:c11ppc:RMWrel}~
+\labelb{eq:c11ppc:RMWar}~
+\labelb{eq:c11ppc:RMWsc}~
+\labelb{eq:c11ppc:Frlx}~
+\labelb{eq:c11ppc:Far}~
+\labelb{eq:c11ppc:Fsc}~\text{[see full version]}
+\and
+\labelb{eq:c11ppc:ad}~
+\field{X}{ad} = \pi \join \field{Y}{ad} \join \pi^{-1}
+\and
+\labelb{eq:c11ppc:dd}~
+\field{X}{dd} = \pi \join \field{Y}{dd} \join \pi^{-1}
+\and
+\labelb{eq:c11ppc:cd1}~
+\stack{
+\forall (e_1,e_2) \in \field{X}{cd} \ldotp \exists e'_1 \in
+(\{e_1\}\join\pi)\ldotp {}\\{} (\{e'_1\}\times
+(\{e_2\}\join\pi)) \subseteq \field{Y}{cd}
+}
+\and
+\labelb{eq:c11ppc:cd2}~
+\stack{
+\forall (e'_1,e'_2) \in \field{Y}{cd} \ldotp \exists (e_1,e_2) \in
+(\field{X}{cd})^{?} \ldotp {}\\{}
+e'_1 \in (\{e_1\}\join\pi) \wedge 
+e'_2 \in (\{e_2\}\join\pi)
+}
+\end{mathpar}
+\end{myFrame}
+\caption{Compilation scheme from C11 to Power}
+\label{fig:c11_ppc}
+\end{figure}
+
+\label{sec:Q4_c11_ppc}
+A C execution $X$ is deemed to compile to a Power execution $Y$ if
+there exists a relation $\pi$ between the events of the former and
+those of the latter such that $compile_{\rm C11/PPC}(\pi,X,Y)$ holds,
+as defined in Fig.~\ref{fig:c11_ppc}.
+
+The $\pi$ relation is injective, surjective and left-total (i.e., a
+multivalued function)~\refb{eq:c11ppc:pi1}~\refb{eq:c11ppc:pi2}. 
+
+The mapping must not remove $sb$ edges, but can add
+them~\refb{eq:c11ppc:sb}. New $sb$ edges are created either when a
+partial $sb$ is linearised, or when a single software-level event maps
+to a chain of architecture-level events.
+
+A non-atomic or relaxed read maps to a single
+read~\refb{eq:c11ppc:Rrlx}. An acquire read maps to a pair of
+architecture-level events, say $e'_1$ and $e'_2$, where $e'_1$ is a
+read, $e'_2$ is an "isync", $e_1$ and $e_2$ are sequenced
+consecutively, and every event in $Y$ that is sequenced after $e'_1$
+becomes control-dependent on $e'_1$~\refb{eq:c11ppc:Racq}. The full
+version of our mapping also includes SC reads~\refb{eq:c11ppc:Rsc},
+relaxed/release/SC
+writes~\refb{eq:c11ppc:Wrlx}~\refb{eq:c11ppc:Wrel}~\refb{eq:c11ppc:Wsc},
+RMWs~\refb{eq:c11ppc:RMWrlx}~\refb{eq:c11ppc:RMWacq}~\refb{eq:c11ppc:RMWrel}~\refb{eq:c11ppc:RMWar}~\refb{eq:c11ppc:RMWsc},
+and
+fences~\refb{eq:c11ppc:Frlx}~\refb{eq:c11ppc:Far}~\refb{eq:c11ppc:Fsc}.
+
+The mapping does not affect address or data
+dependencies~\refb{eq:c11ppc:ad}~\refb{eq:c11ppc:dd}. \JWComment{Need
+to think more about control
+dependencies~\refb{eq:c11ppc:cd1}~\refb{eq:c11ppc:cd2}.} The mapping
+does not change locations~\refb{eq:c11ppc:sloc} or
+threading~\refb{eq:c11ppc:sthd}, and the $rf$ and $co$ maps are
+unaffected~\refb{eq:c11ppc:rf}~\refb{eq:c11ppc:co}.
+
+\paragraph{Results} We used Alloy to search for C11/Power compilation
+bugs involving software-level executions of up to four events and
+architecture-level executions of up to eight events. (Beyond this, the
+SAT solver timed out.) We found no bugs.
+
+We also used Alloy to search for bugs in two other, broadly similar,
+C11 compilation schemes. The target memory models, which cannot be
+named, are currently being developed by two major chip companies.
+Alloy found a bug in one of the models, which led us to the
+observation that the model was failing to include control dependencies
+(though we have been unable to confirm this with the developers as an
+actual bug).
+
+\subsection{Results for initial writes / predicate calculus}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{semilogxaxis}[
+  legend pos=south east,
+  xtickten={3,4,5},
+  ytick={1,3,5},
+  x label style={at={(axis description cs:0,0.335)},anchor=north west},
+  ylabel near ticks,
+  ylabel={Task},
+  xlabel={Solve time /s:},
+  minor tick num=0,
+  height=3cm,
+  width=9.1cm,
+]
+\addplot[only marks, mark size=0pt]
+plot [error bars/.cd, x dir=both, x explicit, error bar style={line
+width=3pt, draw=green}] 
+table [y=task, x=init, x error minus expr=\thisrow{init}-\thisrow{initmin}, x
+error plus expr=\thisrow{initmax}-\thisrow{init}, col sep=comma]
+{../models/tests/results_init_exp/Sheet 1-Table 2.csv};
+
+\addplot[only marks, mark size=0pt]
+plot [error bars/.cd, x dir=both, x explicit, error bar style={line
+width=3pt, draw=red}] 
+table [y expr=\thisrow{task}-0.5, x=normal, x error minus expr=\thisrow{normal}-\thisrow{normalmin}, x
+error plus expr=\thisrow{normalmax}-\thisrow{normal}, col sep=comma]
+{../models/tests/results_init_exp/Sheet 1-Table 2.csv};
+
+\addplot[only marks, mark size=0pt]
+plot [error bars/.cd, x dir=both, x explicit, error bar style={line
+width=3pt, draw=blue}] 
+table [y expr=\thisrow{task}+0.5, x=exp, x error minus
+expr=\thisrow{exp}-\thisrow{expmin}, x
+error plus expr=\thisrow{expmax}-\thisrow{exp}, col sep=comma]
+{../models/tests/results_init_exp/Sheet 1-Table 2.csv};
+%\legend{initial writes, normal, predicate}
+\end{semilogxaxis}
+\end{tikzpicture}
+\end{center}
+
+\subsection{Other nice things about Alloy}
+
+Alloy has several qualities that
+make it ideal, we believe, for this kind of work:
+
+\begin{description}
+
+\item[Modularity] Alloy's type system supports subtyping, which we
+exploit by having, for instance, \emph{x86 executions} inherit the
+constraints of \emph{architecture-level executions}, which inherit the
+constraints of \emph{executions}. This, together with Alloy's simple
+module system that allows generic definitions, preserves the
+readability of our models. 
+
+\item[Debuggability] If Alloy fails, it fails `visibly' (to coin a
+phrase by Padon et al.~\cite{padon+16}). That is, if Alloy produces a
+bogus solution, it is typically straightforward to identify
+constraints to strengthen. And if Alloy fails to find a known
+solution, it helpfully highlights the minimal subset of unsatisfiable
+constraints, which simplifies the subsequent search for constraints to
+weaken.
+
+\item[Maturity] Having been in development for over fifteen
+years~\cite{jackson+01}, Alloy has a large user base and support
+community. It is also open-source and offers an easy-to-use API. 
+%
+\end{description}
+
+\subsection{Architecture-level executions}
+
+\begin{figure}[t]
+\paragraph{Sets of events ($\subseteq \E$):} ~\\
+\quad\begin{tabular}{ll}
+$atom$ & relates the components of an RMW
+\end{tabular} \\~
+
+\paragraph{Well-formedness constraints:}
+\begin{mathpar}
+\labelb{eq:hwexec:sbtot}~ \sthd \subseteq sb^? \cup (sb^{-1})^?
+\and
+\labelb{eq:hwexec:nona}~ nal = \emptyset
+\and
+\labelb{eq:hwexec:noRMW}~ R \ncap W
+\and
+\labelb{eq:hwexec:atom}~ atom \subseteq (R\times W) \cap \imm(sb)
+\end{mathpar}
+\caption{Architecture-level executions, $\ExecH$ (extending $\Exec$)}
+\label{fig:hw_exec}
+\end{figure}
+
+An architecture-level execution is a structure that inherits all the
+fields and well-formedness conditions from basic executions, and
+adds those listed in Fig.~\ref{fig:hw_exec}. Since the structure of
+assembly code does not permit ambiguous evaluation orders,
+sequenced-before becomes a total relation within each
+thread~\refb{eq:hwexec:sbtot}. There is no concept of a non-atomic
+location at the architecture level~\refb{eq:hwexec:nona}. It is
+commonplace in architecture-level MCMs to separate the read and the
+write of an RMW into separate events~\refb{eq:hwexec:noRMW}, and
+connect them with the $atom$
+relation~\refb{eq:hwexec:atom}~\cite{alglave+14}. This differs from
+the C11 approach, where an RMW is a single event belonging to both $R$
+and $W$.
+
+\subsection{Relation calculus vs. predicate calculus}
+
+Alloy supports concise relation calculus expressions like
+$irreflexive(rf\join hb)$ and more powerful predicate calculus
+expressions like $\forall e_1,e_2\ldotp (e_1,e_2)\in rf \Rightarrow
+(e_2,e_1)\notin hb$. We measured the impact on solving time when a few
+tasks (1, 3, and 5) were converted to use the latter style, and found
+it to be negligible. 
+
+\subsection{Bit where we work through a few examples of `generating
+litmus tests'}
+
+The following example illustrates
+how this technique can obtain conformance tests (\Q1) for the C11
+memory model.
+
+\begin{Example}
+Consider the following C11 execution, in which ${\rm W}_{"rlx"}$ and
+${\rm R}_{"rlx"}$ denote atomic write and read events with `relaxed'
+memory order.
+%
+\begin{equation}
+\label{exec:goodtest}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (2,0.8) {$\evR{"rlx"}{"x"}{1}$};
+\node (b) at (2,0) {$\evR{"rlx"}{"x"}{0}$};
+\node (c) at (0,0.8) {$\evW{"rlx"}{"x"}{1}$};
+\draw[edgerf] (c) to [auto] node {$rf$} (a);
+\draw[edgesb] (a) to [auto] node {$sb$} (b);
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)] {};
+\end{tikzpicture}
+\end{equation}
+The execution is inconsistent in C11, because of a coherence violation. It can be
+reverse-engineered into a litmus test
+\begin{equation*}
+\litmustestII{atomic\_int x=0;}{
+\texttt{x.store(1,RLX);} & \texttt{r0=x.load(RLX);} \\
+                         & \texttt{r1=x.load(RLX);} \\
+}{r0==1 \&\& r1==0}
+\end{equation*}
+that is both useful and conclusive.
+\end{Example}
+
+Unfortunately, litmus tests generated in this way are not always
+\emph{conclusive}. If a particular execution is \emph{allowed} under a
+memory model, we can easily construct a litmus test that \emph{can
+pass}, but if a particular execution is \emph{forbidden} under a
+memory model, it is not straightforward to construct a litmus test
+that \emph{must fail}, because the constructed litmus test may still
+be able to pass via a different execution that is allowed. The
+following two examples demonstrate why it is not enough for the
+execution merely to be inconsistent (and hence why we further impose
+deadness).
+
+\begin{Example}
+\label{ex:badtest_racy}
+Consider the following C11 execution, in which "na" indicates events
+corresponding to non-atomic operations.
+\begin{equation}
+\label{exec:badtest_racy}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0) {$\evW{"na"}{"a"}{1}$};
+\node (b) at (2,0) {$\evR{"na"}{"a"}{1}$};
+\draw[edgerf] (a) to [auto] node {$rf$} (b);
+\node[sthd, fit=(a)] {};
+\node[sthd, fit=(b)] {};
+\end{tikzpicture}
+\end{equation}
+It is inconsistent in C11 (because a read of a non-atomic location
+must only observe a write that happens before it), but the litmus test
+obtained from it
+\begin{equation*}
+\litmustestII{int a=0;}{
+\texttt{a=1;} & \texttt{r0=a;} \\
+}{r0==1}
+\end{equation*}
+is not conclusive because it admits the execution
+\begin{equation*}
+\begin{tikzpicture}[inner sep=1pt]
+\node (a) at (0,0) {$\evW{"na"}{"a"}{1}$};
+\node (b) at (2,0) {$\evR{"na"}{"a"}{0}$};
+%\draw[edgerf] (a) to [auto] node {$rf$} (b);
+\node[sthd, fit=(a)] {};
+\node[sthd, fit=(b)] {};
+\end{tikzpicture}
+\end{equation*}
+%
+which is both consistent and racy. (Any behaviour is allowed for a
+program that admits a consistent and racy execution.) \end{Example}
+
+\begin{Example} 
+\label{ex:badtest_co}
+Consider the following C11 execution, in which $co$
+denotes the coherence order on writes.
+\begin{equation}
+\label{exec:badtest_co}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0.8) {$\evtlbl{$a$}\evW{"rlx"}{"x"}{2}$};
+\node (b) at (0,0) {$\evtlbl{$b$}\evW{"rlx"}{"x"}{1}$};
+\node (c) at (2.5,0.8) {$\evtlbl{$c$}\evW{"rlx"}{"x"}{3}$};
+\node (d) at (2.5,0) {$\evtlbl{$d$}\evR{"rlx"}{"x"}{3}$};
+\draw[edgerf] (c) to [auto, bend right, swap] node {$rf$} (d);
+\draw[edgesb] (a) to [auto, bend left] node {$sb$} (b);
+\draw[edgesb] (c) to [auto, bend left] node {$sb$} (d);
+\draw[edgemo] (b) to [auto, bend left] node {$co$} (a);
+\draw[edgemo] (a) to [auto] node {$co$} (c);
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)(d)] {};
+\end{tikzpicture}
+\end{equation}
+It is inconsistent in C11 (because of a coherence violation), but
+the litmus test obtained from it
+\begin{equation*}
+\litmustestII{atomic\_int x=0;}{
+\texttt{x.store(2,RLX);} & \texttt{x.store(3,RLX);} \\
+\texttt{x.store(1,RLX);} & \texttt{r0=x.load(RLX);} \\
+}{x==3 \&\& r0==3}
+\end{equation*}
+is not conclusive because its final state can be obtained via
+a consistent execution that simply reverses the $co$ edge
+in~\eqref{exec:badtest_co} from $(b,a)$ to $(a,b)$. 
+\end{Example}
+
+The purpose of the `$dead$' condition in
+Def.~\ref{def:general_problem_executions} is to rule out executions
+like \eqref{exec:badtest_racy} that give rise to litmus tests that can
+pass because they are racy, as well as executions like
+\eqref{exec:badtest_co} whose litmus tests can pass via another
+consistent execution, but to permit executions
+like~\eqref{exec:goodtest}. With a suitable definition of `$dead$'
+(\S\ref{sec:safety}), and careful restrictions on the target
+programming language (\S\ref{sec:language}), our approach ensures that
+if $(X,Y)$ solves $\GeneralExec$, and if $X$ and $Y$ are maximal
+candidate executions of programs $P$ and $Q$ (respectively) that reach
+$\sigma$, then $(P,Q,\sigma)$ solves the original $\GeneralProg$
+problem, as required. We find that obtaining $(P,Q,\sigma)$ in this
+indirect way is a much more efficient strategy than solving
+$\GeneralProg$ directly.
+
+\subsection{Constructing coherence}
+\label{sec:sezgin}
+
+Sezgin~\cite{sezgin04} has asked whether $co$ can constructed from the
+other relations of an execution, such as $sb$ and $rf$, rather than
+simply declared to exist. He has shown that an attempt to characterise
+SC executions in this way falls short, by exhibiting a 16-event
+execution~\cite[Fig.~4.3]{sezgin04} that is judged SC according to the
+`constructed $co$' approach, but is nonetheless not SC. We encoded his
+$co$ construction into Alloy and sought a discrepancy with the SC
+MCM. Unfortunately, Sezgin's 16-event example proved to be out of
+Alloy's reach. This problem is much more computationally expensive
+than the problem considered in \S\ref{sec:kyndylan}, because to show
+that an execution is \emph{not} SC, we must universally quantify over
+all possible $co$ relations.
+
+
+\subsection{Handling (mutually) recursive definitions}
+\label{sec:fixpoints}
+
+The axiomatic Power MCM derives four relations (called $ic$, $ii$,
+$ci$ and $cc$) via mutual recursion. In the ".cat"
+format~\cite{alglave+14}, one can write `"let rec $ic = f_0(ic,ii,ci,cc)$ and $ii =
+f_1(ic,ii,ci,cc)$ and $ci = f_2(ic,ii,ci,cc)$ and $cc = f_3(ic,ii,ci,cc)$"', but Alloy does not provide recursive
+definitions. Accordingly, we expand the recursive construction explicitly, using the constraints
+\begin{mathpar}
+\labelb{ppcrec:0}~
+f_0(ic,ii,ci,cc) \subseteq ic
+\and
+\labelb{ppcrec:1}~
+f_1(ic,ii,ci,cc) \subseteq ii
+\and
+\labelb{ppcrec:2}~
+f_2(ic,ii,ci,cc) \subseteq ci
+\and
+\labelb{ppcrec:3}~
+f_3(ic,ii,ci,cc) \subseteq cc
+\and
+\labelb{ppcrec:all}~
+\stack{\forall ic',ii',ci',cc'\ldotp\\
+\quad (f_0(ic',ii',ci',cc') \subseteq ic' \wedge
+f_1(ic',ii',ci',cc') \subseteq ii' \wedge {}\\
+\quad \phantom(f_2(ic',ii',ci',cc') \subseteq ci' \wedge
+f_3(ic',ii',ci',cc') \subseteq cc') \Rightarrow {}\\
+\quad\quad (ci \subseteq ci' \wedge ii \subseteq ii' \wedge cc \subseteq cc' \wedge ic \subseteq ic')}
+\end{mathpar}
+%
+to express that $(ic,ii,ci,cc)$ is both a
+pre-fixpoint~\refb{ppcrec:0}~\refb{ppcrec:1}~\refb{ppcrec:2}~\refb{ppcrec:3}
+and the least such~\refb{ppcrec:all}. This last constraint involves
+universal quantification over relations and hence requires the
+higher-order AlloyStar solver. A first-order alternative is simply to
+unroll the recursive definitions a few times; that is, to define
+$ic = f_0^k(\emptyset,\emptyset,\emptyset,\emptyset)$ (and $ii$, $ci$,
+and $cc$ similarly) for a fixed $k$. We found, for a search scope of 4
+software events and 8 hardware events, that $k\ge 2$ is sufficient for
+avoiding false positives. Figure~\ref{fig:fixpoint_results} shows that
+the proper fixpoint construction (i.e., $k=\infty$) is considerably
+more expensive than a fixed unrolling.
+
+\subsection{MP bug in OpenCL/AMD}
+
+\begin{figure}
+\newcommand\ST[1]{\begin{array}{@{}c@{}}#1\end{array}}
+\newcommand\LG[2]{{$\scriptsize\left(\ST{\sigma_{#1}\\
+\sigma_{#2}}\right)$}}
+\begin{tikzpicture}[inner sep=1pt]
+
+\node[event, anchor=west](a) at (-4.9,0) 
+{$\evW{\na}{"x"}{1}$};
+
+\node[event, anchor=west](b) at (-4.9,-0.8) 
+{$\evW{\morel,\msdv}{"y"}{1}$};
+
+\node[event, anchor=west](c) at (-3.3,0) 
+{$\evR{\moacq,\msdv}{"y"}{1}$};
+
+\node[event, anchor=west](d) at (-3.3,-0.8) 
+{$\evR{\na}{"x"}{0}$};
+
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)(d)] {};
+
+\draw[edgerf] (b) to[auto, pos=0.4] node{$rf$} (c);
+\foreach \i/\j in {a/b}
+\draw[edgesb] ([xshift=8mm]\i.south west) to[auto,swap,pos=0.4]
+node{$sb$} ([xshift=8mm]\j.north west -| \i.south west);
+\foreach \i/\j in {c/d}
+\draw[edgesb] ([xshift=8mm]\i.south west) to[auto,swap,pos=0.6]
+node{$sb$,$cd$} ([xshift=8mm]\j.north west -| \i.south west);
+
+\node (inv1) at (2.3,0) {\LG04$\evInv$\LG04};
+\node (efet1) [below=4mm of inv1] {\LG04$\evEFet{"x"}$\LG34};
+\node (sto1) at (0,0) {\LG04$\evW{}{"x"}{1}$\LG14};
+\node (eflu1) [below=4mm of sto1] {\LG14$\evEFlu{"x"}$\LG25};
+\node (flu1) [below=4mm of eflu1] {\LG25$\evFlu$\LG25};
+\node (sto2) [below=4mm of flu1] {\LG25$\evW{}{"y"}{1}$\LG65};
+\node (eflu2) [below=4mm of sto2] {\LG65$\evEFlu{"y"}$\LG77};
+\node (efet2) [below=4mm of efet1] {\LG37$\evEFet{"y"}$\LG87};
+\node (loa1) [below=4mm of efet2] {\LG87$\evR{}{"y"}{1}$\LG87};
+\node (loa2) [below=4mm of loa1] {\LG87$\evR{}{"x"}{0}$\LG87};
+
+\draw[edgerf] (sto2) to[auto, pos=0.1, bend left=40] node[inner sep=0]{$rf$} (loa1);
+
+\coordinate (wg1nw) at ([yshift=2mm]sto1.north west);
+\coordinate (wg1ne) at ([yshift=2mm]sto1.north east);
+\coordinate (wg1sw) at ([yshift=-2mm]eflu2.south west);
+\coordinate (wg1se) at ([yshift=-2mm]eflu2.south east);
+
+\coordinate (wg2nw) at ([yshift=2mm]inv1.north west);
+\coordinate (wg2ne) at ([yshift=2mm]inv1.north east);
+\coordinate (wg2sw) at ([yshift=-2mm]loa2.south west);
+\coordinate (wg2se) at ([yshift=-2mm]loa2.south east);
+
+\node[sthd_tight, fit=(sto1)(eflu2)] {};
+\node[sthd_tight, fit=(inv1)(loa2)] {};
+
+\draw[edgepi, overlay] (a) to[auto, out=30, in=180,pos=0.8] node{$\pi$} (sto1);
+\draw[edgepi] (b) to[auto, out=330, in=180,pos=0.4] node{$\pi$} (flu1);
+\draw[edgepi] (b) to[auto, out=330, in=160] (sto2);
+\draw[edgepi] (c) to[auto, out=350, in=200, swap, pos=0.2] node{$\pi$} (inv1);
+\draw[edgepi] (c) to[auto, out=350, in=120] (loa1);
+\draw[edgepi] (d) to[auto, bend right=10, pos=0.1] node{$\pi$} (loa2);
+
+\draw[edgethen] (inv1) to (efet1);
+\draw[edgethen] (efet1) to[out=175,in=360] (sto1);
+\draw[edgethen] (sto1) to (eflu1);
+\draw[edgethen] (eflu1) to (flu1);
+\draw[edgethen] (flu1) to (sto2);
+\draw[edgethen] (sto2) to (eflu2);
+\draw[edgethen] (eflu2) to[out=0,in=180] (efet2);
+\draw[edgethen] (efet2) to (loa1);
+\draw[edgethen] (loa1) to (loa2);
+
+\node[anchor=north west] at (-5.0,-1.25) {$\begin{array}{@{}r@{\,}c@{\,}l@{}} 
+\sigma_0 &=& \{\} \\
+\sigma_1 &=& \{\ST{"x"\mapsto_{\rm dv}1}\} \\
+\sigma_2 &=& \{\ST{"x"\mapsto_{\rm cv}1}\} \\
+\sigma_3 &=& \{\ST{"x"\mapsto_{\rm cv}0}\} \\
+\sigma_4 &=& \{\ST{"x"\mapsto_{\rm cv}0, 
+                   "y"\mapsto_{\rm cv}0}\} \\
+\sigma_5 &=& \{\ST{"x"\mapsto_{\rm cv}1, 
+                   "y"\mapsto_{\rm cv}0}\} \\
+\sigma_6 &=& \{\ST{"x"\mapsto_{\rm cv}1, 
+                   "y"\mapsto_{\rm dv}1}\} \\
+\sigma_7 &=& \{\ST{"x"\mapsto_{\rm cv}1, 
+                   "y"\mapsto_{\rm cv}1}\} \\
+\sigma_8 &=& \{\ST{"x"\mapsto_{\rm cv}0, 
+                   "y"\mapsto_{\rm cv}1}\}
+\end{array}$};
+\end{tikzpicture}
+\caption{Message-passing bug in OpenCL/AMD compilation}
+\label{fig:mp_bug}
+\end{figure}
+
+See Fig.~\ref{fig:mp_bug}.
+
+\subsection{Other related work}
+
+\begin{itemize}
+
+\item Horn et al.~\cite{horn+15} have a paper that is something to do
+with SAT-solving and weak memory, and also mentions the N-free
+property.
+
+\item Lau et al. have looked at how to reverse-engineer a program
+by examining executions~\cite{lau+03}.
+
+\item Maybe mention future application to crash-consistency models
+(Bornholt et al, ASPLOS 16, http://homes.cs.washington.edu/~bornholt/papers/ferrite-asplos16.pdf)
+
+\item We remark that consistency models for distributed systems often
+resemble those for memory systems, and we expect that our comparison
+techniques may prove helpful in that domain too -- potentially using
+Cerone et al.'s axiomatic treatment of various notions of consistency
+as a starting point~\cite{cerone+15}.
+
+\item Regarding the SC-DRF guarantee (\Q2): Batty et al. have proved it
+manually for C11, while Bouajjani et al.~\cite{bouajjani+11} have
+analysed the complexity of automatically checking it for the TSO
+memory model~\cite{owens+09}.
+
+\item Jade's SFM lecture notes?~\cite{alglave15}
+
+\end{itemize}

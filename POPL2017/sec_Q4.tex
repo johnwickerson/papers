@@ -1,0 +1,530 @@
+\section{\!\!\!\!Application: Checking Compiler Mappings (\Q4)}
+\label{sec:compilers}
+
+We now report on our use of Alloy to investigate OpenCL
+compiler mappings for AMD-style GPUs (\S\ref{sec:Q4_opencl_amd}) and
+NVIDIA GPUs (\S\ref{sec:Q4_opencl_ptx}), and a C11 compiler mapping for
+Power (\S\ref{sec:Q4_c11_power}).
+
+Checking compiler mappings requires a relation that holds when one
+execution `compiles' to another. Of course, real compilers do not
+compile on a `per-execution' level, but from a pair of executions
+related in this way, we can obtain a pair of programs that are related
+by the compiler mapping at the level of program code. Compiler mappings are more complicated than the
+strengthenings considered in \S\ref{sec:monotonicity}, because
+they may introduce additional events, such as fences. For this
+reason, we introduce an additional relation, $\pi$, to connect each
+original event to its compiled event(s). (In \S\ref{sec:monotonicity},
+$\pi$ is the identity relation.) 
+
+We are able to handle `straight line' mappings like
+C11/x86~\cite{batty+11}, OpenCL/AMD (\S\ref{sec:Q4_opencl_amd}) and
+OpenCL/PTX (\S\ref{sec:Q4_opencl_ptx}). We can also handle more
+complicated mappings like C11/Power~\cite{batty+12, sarkar+12}, which
+includes RMWs and introduces control dependencies, but our examples
+are limited to the execution level, because at the code level, C11
+RMWs map to Power loops, which our loop-free output programming
+language cannot express.
+
+
+\begin{figure}[t]
+\begin{myFrame}{$compile(\pi,X,Y)$}
+\begin{mathpar}
+\labelb{eq:compile:pi1}~
+\stor{\field{X}{E}} = \pi \join \pi^{-1}
+\and
+\labelb{eq:compile:pi2}~
+\stor{\field{Y}{E}} \subseteq \pi^{-1} \join \pi
+\and
+\labelb{eq:compile:sb}~
+\pi^{-1} \join \field{X}{sb}^? \join \pi = \field{Y}{sb}^?
+\and
+\labelb{eq:compile:ad}~
+\field{X}{ad} = \pi \join \field{Y}{ad} \join \pi^{-1}
+\and
+\labelb{eq:compile:dd}~
+\field{X}{dd} = \pi \join \field{Y}{dd} \join \pi^{-1}
+\and
+\labelb{eq:compile:cd}~
+\field{X}{cd}\join \pi = \pi \join \field{Y}{cd}
+\and
+\labelb{eq:compile:sloc}~
+\field{X}{sloc} = \pi \join \field{Y}{sloc} \join \pi^{-1}
+\and
+\labelb{eq:compile:sthd}~
+\pi^{-1} \join \field{X}{sthd} \join \pi = \field{Y}{sthd}
+\and
+\labelb{eq:compile:rf}~
+\field{X}{rf} = \pi \join \field{Y}{rf} \join \pi^{-1}
+\and
+\labelb{eq:compile:co}~
+\field{X}{co} = \pi \join \field{Y}{co} \join \pi^{-1}
+\end{mathpar}
+\end{myFrame}
+\caption{Compiling an execution}
+\label{fig:compile}
+\end{figure}
+
+Execution $X$ maps to execution $Y$ if there exists a $\pi$ for
+which $compile(\pi,X,Y)$ holds, as defined in
+Fig.~\ref{fig:compile}. Here, $\pi$ is an injective, surjective,
+multivalued function from $X$'s events to $Y$'s
+events~\refb{eq:compile:pi1}~\refb{eq:compile:pi2}, that preserves
+sequencing~\refb{eq:compile:sb},
+dependencies~\refb{eq:compile:ad}~\refb{eq:compile:dd}~\refb{eq:compile:cd},
+locations~\refb{eq:compile:sloc}, threads~\refb{eq:compile:sthd}, the
+reads-from relation~\refb{eq:compile:rf}, and the coherence
+order~\refb{eq:compile:co}. The location-preservation and
+thread-preservation constraints have different shapes because, for
+instance, when a mapping sends source event $e$ to a set
+$\{e'_i\}_i$ of target events, it must ensure that \emph{one} $e'_i$
+has $e$'s location (the other events will be fences), but that
+\emph{every} $e'_i$ is in the same thread.
+
+\subsection{Compiling OpenCL to AMD-Style GPUs}
+\label{sec:Q4_opencl_amd}
+Orr et al.~\cite{orr+15} describe a compiler mapping from OpenCL to
+an AMD-style GPU architecture. Actually, they support OpenCL extended
+with `remote-scope promotion', in which a workgroup-scoped event $a$
+can synchronise with an event $b$ in a different workgroup if $b$ is
+annotated as `remote'. Wickerson et al.~\cite{wickerson+15a} report on
+two bugs in this scheme: a failure to implement message-passing, and a
+failure of RMW atomicity.
+
+\begin{figure}
+\newcommand\ST[1]{\begin{array}{@{}c@{}}#1\end{array}}
+\newcommand\LG[2]{\smash{$\scriptsize\left(\ST{#1\\#2}\right)$}}
+\centering
+\begin{tikzpicture}[inner sep=1pt]
+
+\node[event](a) at (-0.8,2.3) 
+{\evtlbl{$a$}$\evRMW{\moar,\mswg}{"x"}{0}{1}$};
+
+\node[event](b) at (0.3,1.3) 
+{\evtlbl{$b$}$\evW{\morel,\msdv,"REM"}{"x"}{2}$};
+
+
+\node[sthd, fit=(a)] (t1) {};
+\node[sthd, fit=(b)] (t2) {};
+\node[swg, fit=(t1)] {};
+\node[swg, fit=(t2)] {};
+
+\draw[edgemo] (b) to[auto, pos=0.4, swap] node{$co$} (a);
+
+
+\node (rinv) at (4.3,0) 
+{\strut\llap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto_{\rm L} 0}}$\evRemInv$\rlap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto_{\rm L} 0}}};
+\node (st) [above=3mm of rinv]
+{\strut\llap{\LG{}{"x"\mapsto_{\rm L} 0}}$\evW{}{"x"}{2}$\rlap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto_{\rm L} 0}}};
+\node (flu) [above=3mm of st] 
+{\strut\llap{\LG{}{"x"\mapsto_{\rm L} 0}}$\evFlu$\rlap{\LG{}{"x"\mapsto_{\rm L} 0}}};
+\node (lk) [above=3mm of flu] 
+{\strut\llap{\LG{}{"x"\mapsto 0}}$\evLk{"x"}$\rlap{\LG{}{"x"\mapsto_{\rm L} 0}}};
+\node (uk) [below=3mm of rinv] 
+{\strut\llap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto_{\rm L} 0}}$\evUk{"x"}$\rlap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto 0}}};
+\node (efet) at (0,0) 
+{\strut\llap{\LG{}{"x"\mapsto 0}}$\evEFet{"x"}$\rlap{\LG{"x"\mapsto_{\rm vc} 0}{"x"\mapsto 0}}};
+\node (inc) [below=3mm of efet] 
+{\strut\llap{\LG{"x"\mapsto_{\rm vc} 0}{"x"\mapsto 0}}$\evRMW{}{"x"}{0}{1}$\rlap{\LG{"x"\mapsto_{\rm vd} 1}{"x"\mapsto 0}}};
+\node (eflu1) [below=3mm of uk]
+{\strut\llap{\LG{"x"\mapsto_{\rm vd} 2}{"x"\mapsto 0}}$\evEFlu{"x"}$\rlap{\LG{"x"\mapsto_{\rm vc} 2}{"x"\mapsto 2}}};
+\node (eflu2) [below=3mm of inc]
+{\strut\llap{\LG{"x"\mapsto_{\rm vd} 1}{"x"\mapsto 2}}$\evEFlu{"x"}$\rlap{\LG{"x"\mapsto_{\rm vc} 1}{"x"\mapsto 1}}};
+
+\draw[edgethen] (lk) to (flu);
+\draw[edgethen] (flu) to (st);
+\draw[edgethen] (st) to (rinv);
+\draw[edgethen] (rinv) to (uk);
+\draw[edgethen] ([xshift=-14mm, yshift=1mm]uk.west) to ([xshift=14mm, yshift=-1mm]efet.east);
+\draw[edgethen] (efet) to (inc);
+\draw[edgethen] ([xshift=14mm, yshift=-1mm]inc.east) to ([xshift=-14mm, yshift=1mm]eflu1.west);
+\draw[edgethen] ([xshift=-14mm]eflu1.west) to ([xshift=14mm]eflu2.east);
+
+\draw[edgemo] (st) to[auto, bend right, swap, pos=0.4] node{$co$} (inc);
+
+\coordinate (wg1n) at ([yshift=1mm]efet.north);
+\coordinate (wg1w) at ([xshift=-13mm]inc.west);
+\coordinate (wg1e) at ([xshift=13mm]inc.east);
+\coordinate (wg1s) at ([yshift=-1mm]eflu2.south);
+
+\coordinate (wg2n) at ([yshift=1mm]lk.north);
+\coordinate (wg2w) at ([xshift=-13mm]rinv.west);
+\coordinate (wg2e) at ([xshift=13mm]st.east);
+\coordinate (wg2s) at ([yshift=-1mm]eflu1.south);
+
+\node[sthd, fit=(wg1n)(wg1w)(wg1e)(wg1s)] (tt1) {};
+\node[sthd, fit=(wg2n)(wg2w)(wg2e)(wg2s)] (tt2) {};
+\node[swg, fit=(tt1)] {};
+\node[swg, fit=(tt2)] {};
+
+\draw[edgepi, overlay] (b) to[out=0, in=210, auto, pos=0.2] 
+node{$\pi$} (lk);
+\draw[edgepi, overlay] (b) to[out=0, in=175] (flu);
+\draw[edgepi, overlay] (b) to[out=0, in=160] (st);
+\draw[edgepi, overlay] (b) to[out=0] (rinv);
+\draw[edgepi, overlay] (b) to[out=0] (uk);
+\draw[edgepi, overlay] (a) to[bend right=40, auto, swap, pos=0.2] node{$\pi$} (inc);
+
+
+\end{tikzpicture}
+\caption{RMW atomicity bug in the OpenCL/AMD mapping}
+\label{fig:atomicity_bug}
+\end{figure}
+
+We have formalised Orr et al.'s architecture-level MCM and compiler
+mapping in Alloy~\cite{popl17supplementary}, following the
+formalisation by Wickerson et al., and then used Alloy to search for
+bugs -- essentially automating the task that Wickerson et
+al. conducted manually. The architecture-level MCM is
+\emph{operational}, which means that consistent executions are
+obtained constructively, not merely characterised by axioms. This
+means that the MCM is more complex to express in Alloy. Essentially,
+the MCM involves a single global memory in which entries can be
+temporarily locked, several processing elements partitioned into
+compute units, and a write-back write-allocate cache per compute unit.
+
+Fig.~\ref{fig:atomicity_bug} depicts the RMW atomicity bug discovered
+by Alloy. The top left of the figure shows a 2-event execution that is
+inconsistent (and dead) in OpenCL, and the right shows a corresponding
+9-event execution that is observable on hardware. (Wickerson et al.'s
+bug is similar, but requires an extra `fetch' event.) All events are
+grouped by thread (inner dotted rectangles) and by workgroup (outer
+dotted rectangles). Events in the architecture-level execution are
+totally ordered (thick black arrows). We track the local and global
+state before and after each event, writing
+$\left(\begin{smallmatrix}\sigma_l\\\sigma_g\end{smallmatrix}\right)$
+for local state $\sigma_l$ and global state $\sigma_g$. The global
+state comprises global memory entries, some of which are locked
+(${\rm L}$). The local state comprises the compute unit's cache
+entries, each either valid (${\rm v}$) or invalid (${\rm i}$), and
+either clean (${\rm c}$) or dirty (${\rm d}$). The $\pi$ edges show
+how the software-level events are mapped to architecture-level events.
+The RMW at workgroup scope ($a$) maps to a single RMW, while the
+remote ("REM") write to "x" ($b$) is implemented by first flushing all
+dirty local cache entries (${\rm Flu}$), then doing the write
+(${\rm W}$), then invalidating all entries in all caches
+(${\rm InvA}$), all while preventing concurrent access to "x" in the
+global memory (${\rm Lk}$, ${\rm Uk}$). Architecture-level executions
+also include the actions of the `environment' fetching ($fet$) and
+flushing ($flu$) entries to and from global memory, as well as derived
+$rf$ and $co$ relations. The undesirable but observable execution, in
+which $"x"=1$ in the final state, arises because the mapping fails to
+propagate $"x"=2$ to the global memory before releasing the lock on
+"x". The fix is to flush immediately after the write.
+
+To make Alloy's search for OpenCL/AMD compiling bugs tractable, we
+found it necessary to make several simplifications: we deleted the
+QuickRelease buffers~\cite{hechtman+14}; we allowed multiple locations
+to be fetched and flushed in a single action (which reduces the total
+number of actions required); we hard-coded the system to have exactly
+two workgroups with one thread each; and we maximised sharing between
+global and local memory entry objects. These changes are not
+necessarily semantics-preserving, but any bogus solutions found using
+the simplified MCM can be simply tested manually against the full one.
+
+
+\subsection{Compiling OpenCL to PTX}
+\label{sec:Q4_opencl_ptx}
+
+In this subsection, we develop and check a compiler mapping from
+OpenCL to PTX. First, using \Q4, we show that a natural mapping is invalid for an existing formalisation of the PTX MCM
+(\mm{PTX1})~\cite{alglave+15}, but valid for a stronger model that we
+develop (\mm{PTX2}). Then, we use \Q2 to generate litmus
+tests that distinguish \mm{PTX2} from \mm{PTX1}, which we use to
+confirm that our \mm{PTX2} remains empirically sound for NVIDIA GPUs.
+
+\begin{figure}[t]
+\begin{myFrame}{$consistent_{\mm{PTX1}}$}
+\begin{mathpar}
+\labelb{eq:ptx:uniproc}~
+\acyclic((sb \cap sloc - R^2) \cup rf \cup co \cup fr)
+\and
+\labelb{eq:ptx:cta}~
+\acyclic(hb_{\rm wg})
+\and
+\labelb{eq:ptx:gl}~
+\acyclic(hb_{\rm dv})
+\end{mathpar}
+\end{myFrame}
+\begin{mathpar}
+rmo \eqdef rfe \cup co \cup fr
+\and
+f_{\rm dv} \eqdef sb \join \stor{F \cap dv} \join sb
+\and
+f_{\rm any} \eqdef sb \join \stor{F} \join sb
+\and
+hb_{\rm wg} \eqdef (rmo \cup f_{\rm any}) \cap swg
+\and
+hb_{\rm dv} \eqdef rmo \cup f_{\rm dv}
+\end{mathpar}
+\caption{The \mm{PTX1} MCM}
+\label{fig:ptx_predicates}
+\end{figure}
+
+Figure~\ref{fig:ptx_predicates} defines the \mm{PTX1} MCM. The model
+enforces coherence (but not between reads, \`a la Sparc RMO~\cite{alglave12})~\refb{eq:ptx:uniproc}, allows any fence to restore
+SC within a workgroup~\refb{eq:ptx:cta}, and allows
+device-scoped fences to restore SC throughout the
+device~\refb{eq:ptx:gl}. We omit dependencies because they are
+difficult to test: the PTX compiler often removes our artificially-inserted dependencies.
+
+\begin{table}
+\centering
+\begin{tabular}{@{}l@{~}l@{~}c@{~}l@{}}
+\labelb{eq:ptxmap:strlx} & $"store"(\na|\morlx, s)$ & $\rightsquigarrow$ & $"st.cg"$ \\
+\labelb{eq:ptxmap:strel} & $"store"(\morel, s)$ & $\rightsquigarrow$ & $"F"_s\join "st.cg"$ \\
+\labelb{eq:ptxmap:stsc} & $"store"(\mosc, s)$ & $\rightsquigarrow$ &
+$"F"_s\join "st.cg" \join "F"_s$ \\
+\labelb{eq:ptxmap:ldna} & $"load"(\na, s)$ & $\rightsquigarrow$ & $"ld.cg"$ \\
+\labelb{eq:ptxmap:lda} & $"load"(\morlx|\moacq, s)$ &
+$\rightsquigarrow$ & $"ld.cg" \join "F"_s$ \\
+\labelb{eq:ptxmap:ldsc} & $"load"(\mosc, s)$ & $\rightsquigarrow$ &
+$"F"_s \join "ld.cg" \join "F"_s$ \\
+\labelb{eq:ptxmap:f} & $"fence"(s)$ & $\rightsquigarrow$ & $"F"_s$ \\
+\end{tabular} 
+\hfill \raisebox{4mm}{$\stack{\text{where}\\"F"_{\mswg} \eqdef "membar.cta" \\ "F"_{\msdv} \eqdef "membar.gl"}$}
+\caption{OpenCL/PTX compiler mapping, program code level}
+\label{tab:opencl_ptx}
+\end{table}
+
+Table~\ref{tab:opencl_ptx} defines the OpenCL/PTX mapping we use.
+OpenCL stores are mapped to PTX stores
+("st.cg")~\refb{eq:ptxmap:strlx}~\refb{eq:ptxmap:strel}~\refb{eq:ptxmap:stsc},
+and OpenCL loads are mapped to PTX loads
+("ld.cg")~\refb{eq:ptxmap:ldna}~\refb{eq:ptxmap:lda}, with fences
+("membar") placed before and/or after the memory access depending on
+whether the OpenCL instruction is non-atomic, relaxed, acquire,
+release, or SC. PTX fences are required even for relaxed OpenCL loads
+because PTX allows consecutive loads from the same address to be
+re-ordered (see~\refb{eq:ptx:uniproc}). The PTX fences are scoped to
+match the scope $s$ of the OpenCL instruction. In line with prior work
+on the PTX MCM~\cite{alglave+15}, we exclude RMWs, local memory, and
+multi-GPU interactions.
+
+\begin{figure}[t]
+%
+\begin{myFrame}{$compile_{\rm OpenCL/PTX}(\pi,X,Y)$}
+\begin{mathpar}
+\labelb{eq:openclptx:comp}~
+compile(\pi,X,Y)
+\and
+\labelb{eq:openclptx:swg}~
+\field{X}{swg} = \pi\tightjoin \field{Y}{swg}\tightjoin \pi^{-1}
+\and
+\stack{~\\[-2mm]
+\labelb{eq:openclptx:Wnarlx}~
+\stack{\forall e\in \field{X}{W} - \field{X}{rel}\ldotp {}\\
+  \exists e' \in \field{Y}{W} \ldotp {}\\
+  \{e\}\tightjoin\pi  = \{e'\}}}
+\and \hspace*{-1mm}
+% \labelb{eq:openclptx:Wsc}~
+% \stack{\forall e\in \Wsc{X}\ldotp {}\\
+%   \exists e'_1, e'_3 \in \membar{e}{X}{Y} \ldotp {}\\
+%   \exists e'_2 \in \field{Y}{W} \ldotp {}\\ 
+%   (e'_1, e'_2) \in imm(\field{Y}{sb}) \wedge {}\\
+%   (e'_2, e'_3) \in imm(\field{Y}{sb}) \wedge {}\\
+%   \{e\}\tightjoin\pi  = \{e'_1\}{\uplus}\{e'_2\}{\uplus}\{e'_3\}}
+% \and
+\labelb{eq:openclptx:Wrel}~
+\stack{\forall e\in \field{X}{W} \cap \field{X}{rel} - \field{X}{sc} -
+\mathrlap{\field{X}{dv}\ldotp} {}\\
+  \exists e'_1 \in \field{Y}{F} - \field{Y}{dv} \ldotp %{}\\
+  \exists e'_2 \in \field{Y}{W} \ldotp {}\\
+  (e'_1, e'_2) \in imm(\field{Y}{sb}) \wedge {}\\
+  \{e\}\tightjoin\pi  = \{e'_1\} \uplus \{e'_2\}}
+% \and
+% \labelb{eq:openclptx:Ra}~
+% \stack{\forall e\in \Ra{X}\ldotp {}\\
+%   \exists e'_1 \in \field{Y}{R} \ldotp {}\\
+%   \exists e'_2 \in \membar{e}{X}{Y} \ldotp {}\\
+%   (e'_1, e'_2) \in imm(\field{Y}{sb}) \wedge {}\\
+%   \{e\}\tightjoin\pi  = \{e'_1\} \uplus \{e'_2\}}
+% \\
+% \labelb{eq:openclptx:Rna}~
+% \stack{\forall e\in \Rna{X}\ldotp {}\\
+%   \exists e' \in \field{Y}{R} \ldotp {}\\
+%   \{e\}\tightjoin\pi  = \{e'\}}
+% \and
+% \labelb{eq:openclptx:F}~
+% \stack{\forall e\in \field{X}{F}\ldotp {}\\
+%   \exists e' \in \membar{e}{X}{Y} \ldotp {}\\
+%   \{e\}\tightjoin\pi  = \{e'\}}
+\end{mathpar}
+\end{myFrame}
+
+% where \vspace*{-3mm}
+% \begin{mathpar}
+% \begin{array}{@{}r@{~}c@{~}l@{}}
+% \Fwg{X} &\eqdef& \field{X}{F} - \field{X}{dv} \\ 
+% \Fdv{X} &\eqdef& \field{X}{F} \cap \field{X}{dv} \\
+% \Rna{X} &\eqdef& \field{X}{R} - \field{X}{A} \\
+% \Ra{X} &\eqdef& \field{X}{R} \cap \field{X}{A}
+% \end{array}
+% \hspace*{-1mm}\and
+% \begin{array}{@{}r@{~}c@{~}l@{}}
+% \Wnarlx{X} &\eqdef& \field{X}{W} - \field{X}{rel} \\
+% \Wrel{X} &\eqdef& \field{X}{W} \cap \field{X}{rel} - \field{X}{sc} \\
+% \Wsc{X} &\eqdef& \field{X}{W} \cap \field{X}{sc} \\
+% \membar{e}{X}{Y} &\eqdef& \stack{\text{$\Fwg{Y}$ if $e\notin
+% \field{X}{dv}$} \\ \text{$\Fdv{Y}$ otherwise}}
+% \end{array}
+% \end{mathpar}
+
+\caption{OpenCL/PTX mapping, execution level (excerpt)}
+\label{fig:compile_opencl_ptx}
+\end{figure}
+
+Figure~\ref{fig:compile_opencl_ptx} shows how the code-level mappings
+in (the first two rows of) Tab.~\ref{tab:opencl_ptx} are encoded at
+the execution level. OpenCL workgroups correspond to PTX
+workgroups~\refb{eq:openclptx:swg}. An OpenCL write without release
+semantics ($e$) maps to a single PTX write
+($e'$)~\refb{eq:openclptx:Wnarlx}, while an OpenCL workgroup-scoped
+release write ($e$) maps to a workgroup-scoped fence ($e'_1$)
+sequenced before a PTX write ($e'_2$)~\refb{eq:openclptx:Wrel}. The
+other rows are handled similarly.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[inner sep=0.5mm, baseline=(a.base)]
+\node (a) at (0.3,2.8) {$\evtlbl{$a$}\evWCL{\morel}{"x"}{1}{\msdv}$};
+\node (b) at (2.9,2.8) {$\evtlbl{$b$}\evRCL{\moacq}{"x"}{1}{\msdv}$};
+\node (c) at (2.9,2.0) {$\evtlbl{$c$}\evWCL{\morel}{"y"}{1}{\mswg}$};
+\node (d) at (5.3,2.8) {$\evtlbl{$d$}\evRCL{\moacq}{"y"}{1}{\mswg}$};
+\node (e) at (5.3,2.0) {$\evtlbl{$e$}\evRCL{\moacq}{"x"}{0}{\mswg}$};
+\draw[edgesb] (b) to [auto,pos=0.4, swap] node {$sb$} (c);
+\draw[edgesb] (d) to [auto,pos=0.5, swap] node {$sb$,$cd$} (e);
+\draw[edgerf] (a) to [auto,swap] node {$rf$} (b);
+\draw[edgerf] (c) to [auto,pos=0.4,swap] node {$rf$} (d);
+\node[sthd, fit=(a)] (t1) {};
+\node[sthd, fit=(b)(c)] (t2) {};
+\node[sthd, fit=(d)(e)] (t3) {};
+\node[swg, fit=(t1)] {};
+\node[swg, fit=(t2)(t3)] {};
+
+\node (a') at (1.6,0.8) {$\evtlbl{$a'$}\evF{\msdv}$};
+\node (b') at (1.6,0.0) {$\evtlbl{$b'$}\evW{}{"x"}{1}$};
+\node (c') at (4.2,0.8) {$\evtlbl{$c'$}\evR{}{"x"}{1}$};
+\node (d') at (4.2,0.0) {$\evtlbl{$d'$}\evF{\msdv}$};
+\node (e') at (4.2,-0.8) {$\evtlbl{$e'$}\evF{\mswg}$};
+\node (f') at (4.2,-1.6) {$\evtlbl{$f'$}\evW{}{"y"}{1}$};
+\node (g') at (6.6,0.8) {$\evtlbl{$g'$}\evR{}{"y"}{1}$};
+\node (h') at (6.6,0.0) {$\evtlbl{$h'$}\evF{\mswg}$};
+\node (i') at (6.6,-0.8) {$\evtlbl{$i'$}\evR{}{"x"}{0}$};
+\node (j') at (6.6,-1.6) {$\evtlbl{$j'$}\evF{\mswg}$};
+\draw[edgesb] (a') to [auto,pos=0.4] node {$sb$} (b');
+\draw[edgesb] (c') to [auto,pos=0.4] node {$sb$} (d');
+\draw[edgesb] (d') to [auto,pos=0.4] node {$sb$} (e');
+\draw[edgesb] (e') to [auto,pos=0.4] node {$sb$} (f');
+\draw[edgesb] (g') to [auto,pos=0.4] node {$sb$} (h');
+\draw[edgesb] (g') to [pos=0.4, bend left=55] (i');
+\draw[edgesb] (g') to [auto,pos=0.15, bend left=55] node {$cd$} (j');
+\draw[edgesb] (h') to [auto,pos=0.4] node {$sb$} (i');
+\draw[edgesb] (i') to [auto,pos=0.4] node {$sb$} (j');
+\draw[edgerf] (b') to [auto,swap,pos=0.4] node {$rf$} (c');
+\draw[edgerf] (f') to [auto,swap,pos=0.56, inner sep=0] node {$rf$} (g');
+\node[sthd, fit=(a')(b')] (t1') {};
+\node[sthd, fit=(c')(d')(e')(f')] (t2') {};
+\node[sthd, fit=(g')(h')(i')(j')] (t3') {};
+\node[swg, fit=(t1')] {};
+\node[swg, fit=(t2')(t3')] {};
+
+\draw[edgepi] (a) to[out=260, in=180, auto, pos=0.2] node{$\pi$} (a');
+\draw[edgepi] (a) to[out=260, in=180] (b');
+\draw[edgepi] (b) to[out=290, in=180, auto, pos=0.6] node{$\pi$} (c');
+\draw[edgepi] (b) to[out=290, in=180] (d');
+\draw[edgepi] (c) to[out=260, in=180] (e');
+\draw[edgepi] (c) to[out=260, in=180, auto, pos=0.13, swap] node{$\pi$} (f');
+\draw[edgepi] (d) to[out=290, in=180, auto, pos=0.6] node{$\pi$} (g');
+\draw[edgepi] (d) to[out=290, in=180] (h');
+\draw[edgepi] (e) to[out=260, in=180] (i');
+\draw[edgepi] (e) to[out=260, in=180, auto, pos=0.13, swap] node{$\pi$} (j');
+\end{tikzpicture}
+\caption{A WRC bug in the OpenCL/PTX1 mapping}
+\label{fig:opencl_ptx1_bug}
+\end{figure}
+
+%\paragraph{A stronger PTX model} 
+We used Alloy to check this mapping against \mm{PTX1}, and found an
+execution that is disallowed by OpenCL
+(Fig.~\ref{fig:opencl_ptx1_bug}, top) but allowed, after compilation,
+by \mm{PTX1} (Fig.~\ref{fig:opencl_ptx1_bug}, bottom). Note that the
+outer dotted rectangles group threads by workgroup. The crux here is
+\emph{cumulative} synchronisation across
+scopes~\cite[\S1.7.1]{power206}. The left thread synchronises at
+workgroup scope with the middle thread (via $a$ and $b$), which
+synchronises at device scope with the right thread (via $c$ and
+$d$). If \mm{PTX1} supported cumulative synchronisation across scopes,
+the left and right threads would now be synchronised, and the
+execution above, in which $e$ observes a stale "y", would be
+forbidden, just as it is in OpenCL.
+
+We could fix the mapping for \mm{PTX1} by upgrading all the PTX fences
+in Tab.~\ref{tab:opencl_ptx} to device scope. However, because
+widely-scoped fences incur high performance overhead on NVIDIA
+GPUs~\cite{sorensen+16}, we opt instead to strengthen \mm{PTX1} to
+support our mapping, by enforcing cumulative synchronisation
+across scopes (obtaining \mm{PTX2}). This entails changing the
+definition of $hb_{\rm dv}$ (Fig.~\ref{fig:ptx_predicates}) to
+%
+\[
+hb_{\rm dv} \eqdef rmo \cup (hb_{\rm wg}^* \join f_{\rm dv}
+ \join hb_{\rm wg}^*)
+\]
+%
+so that device-scoped fences ($f_{\rm dv}$) can restore SC throughout
+the device even if they are preceded or followed by workgroup-scoped
+synchronisation ($hb_{\rm wg}$). After this change, Alloy finds no
+bugs in our mapping with up to 5 software-level events. It times out
+(after four hours) when checking larger executions.
+% \TSComment{I currently have this running for 6,18 events, we'll see
+% if it finishes!}
+
+%\paragraph{Testing our stronger PTX model}
+It remains to show that \mm{PTX2} is sound w.r.t. empirical GPU
+testing data. To do this, we use \Q2 to find litmus tests $(P,\sigma)$
+that are allowed under \mm{PTX1} but disallowed under \mm{PTX2}. We
+wish to find not just a single litmus test (as
+in~\S\ref{sec:discrep}), but as many as possible, so we run Alloy
+iteratively, each time disallowing the execution shape found
+previously, until it is unable to find more. We then check testing
+results (or if results do not exist for a given test, we run new
+tests) to confirm that $(P,\sigma)$ cannot pass on actual GPUs.
+
+Using this method, Alloy finds all 14 distinguishing 7-event tests
+(e.g. WRC~\cite{mador-haim+12}), plus 12 of the distinguishing 8-event
+tests (e.g. IRIW~\cite{boehm+08}) before timing out. We are able to
+query Alglave et al.'s experimental results~\cite{alglave+15} for 22
+of these 26 tests. The rest are single-address tests (which arise
+because PTX does not guarantee coherence in general). These we ran on
+an NVIDIA GTX Titan using the GPU-litmus tool~\cite{alglave+15}. We
+found no behaviours that are allowed by \mm{PTX1}, disallowed by
+\mm{PTX2}, and empirically observable on a
+GPU~\cite{popl17supplementary}. Thus, subject to the available testing
+data, strengthening \mm{PTX1} to \mm{PTX2} is sound, and thus the
+natural OpenCL/PTX compiler mapping can be used.
+
+\subsection{Compiling C11 to Power}
+\label{sec:Q4_c11_power}
+
+Work in progress by Lahav et al.~\cite{lahav+16b} has uncovered a bug
+in the C11/Power mapping previously thought to have been proven sound
+by Batty et al.~\cite{batty+12}.\footnote{Concurrent work by
+Manerkar et al.~\cite{manerkar+16} has shown the C11/ARMv7
+mapping to be similarly flawed.} Before becoming aware of their work, we
+had used Alloy to verify the soundness of the mapping for up to 6
+software-level events and up to 6 architecture-level
+events. Incrementing these bounds any further resulted in intractable
+solving times, which explains why the bug, which requires 6
+software-level events and 13 architecture-level events, had not
+previously been found by Alloy. In order to recreate Lahav et al.'s
+result, we modified the C11/Power mapping so as not to place fences at
+the start or the end of a thread. Removing these redundant fences allows
+the bug to be expressed using just 8 architecture-level events, and
+found automatically by Alloy in a reasonable time (see
+Tab.~\ref{tab:tasks} in the next section).
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

@@ -1,0 +1,699 @@
+\section{Obtaining Litmus Tests}
+\label{sec:language}
+
+If we find executions that solve $\GeneralExec$
+(Def.~\ref{def:general_problem_executions}), we need to `lift' these
+executions up to the level of programs in order to obtain a solution
+to the original problem, $\GeneralProg$
+(Def.~\ref{def:general_problem_programs}).
+
+We begin this section by defining a language for these generated
+programs (\S\ref{sec:programming_language}). The language is designed
+to be sufficiently expressive that for any discovered execution $X$,
+there exists a program in the language that can behave like $X$. In
+particular, the program must be able to create arbitrary sequencing
+patterns and dependencies. Beyond this, we keep the language as small
+as possible to keep code generation simple. The language is also
+generic, so that it can be used to generate both assembly and
+high-level language tests.
+
+We go on to define a function that obtains litmus tests from
+executions (\S\ref{sec:lits}), and show that, under an additional
+assumption about executions, the function is total
+(\S\ref{sec:nfreedom}). We then define our deadness constraint on
+executions (\S\ref{sec:safety}), and conclude with a discussion of
+some of the practical aspects of generating litmus tests (\S\ref{sec:practical}).
+
+\subsection{Programming Language}
+\label{sec:programming_language}
+
+\begin{figure}[t]
+\[
+\newcommand\myskip{1.5mm}
+\begin{array}{@{}r@{~~}r@{~}l@{}}
+\Expr{s} & ::= & 
+         s \mid \Expr{s} + 0 \times \Reg 
+\\[\myskip]
+\Inst     & ::= & 
+         \mathbf{st}(\Expr{\Loc},\Expr{\Val}) 
+  \mid   \mathbf{ld}(\Reg,\Expr{\Loc}) 
+  \mid \mathbf{cas}(\Expr{\Loc},\Val,\Expr{\Val}) 
+  \mid   \mathbf{fe}
+\\[\myskip]
+\Thread     & ::= & 
+     \Inst^\ell
+\mid \Thread +^\ell \Thread
+\mid \Thread \join^\ell \Thread 
+\mid \mathbf{if}^\ell~\Reg=\Val~\mathbf{then}~\Thread
+\\[\myskip]
+\Prog    & ::= & 
+         \Thread \parallel\dots\parallel \Thread
+\end{array}
+\]
+\caption{A programming language}
+\label{fig:pl}
+\end{figure}
+
+The syntax of our generic programming language is defined in
+Fig.~\ref{fig:pl}. We postulate a set $\Val$ of values (containing
+zero), a set $\Reg$ of registers, and a set $\Loc$ of (shared)
+locations, which is subdivided into atomic ($\ALoc$) and non-atomic
+($\NALoc$) locations. Every register and location is implicitly
+initialised to zero. Let $\Expr{s}$ denote a language of
+\emph{expressions} over a set $s$. Observe that since the only
+construction is the addition of a register multiplied by zero, these
+expressions only evaluate to elements of $s$. We use them to create
+artificial dependencies (i.e. \emph{syntactic} but not \emph{semantic}
+dependencies). The set $\Inst$ of \emph{instructions} includes stores,
+loads, compare-and-swaps (CAS's), and fences. The
+$\mathbf{cas}(x,v,v')$ instruction compares $x$ to $v$ (and if the
+comparison succeeds, sets $x$ to $v'$), returning the observed value
+of $x$ in either case. Observe that, artificial dependencies
+notwithstanding, stores and CAS's write only constant values to
+locations. Let $\Thread$ denote a set of \emph{components}, each
+formed from sequenced ($\join$) or unsequenced ($+$) composition, or
+one-armed conditionals that test for a register having a constant
+value. We have no need for loops because the executions we generate
+are finite. Each component has a globally-unique label, $\ell$. Let
+$\Prog$ be the set of \emph{programs}, each a parallel composition of
+components. The top-level components in a program are called
+\emph{threads}.
+
+Some languages attach extra information to instructions, such as their
+atomicity and memory order (in C11), their memory scope (in OpenCL),
+or whether they are `locked' (in x86). Accordingly, when using the
+generic language in Fig.~\ref{fig:pl} to represent one of these
+languages, we introduce an additional function that stores extra
+information for each instruction label.
+
+We ensure that the programs we generate are \emph{well-formed} -- this
+is necessary for ensuring that they provide valid solutions to
+$\GeneralProg$.
+
+\begin{definition}[Well-formed programs]
+\label{def:wf_prog} 
+%
+A program is well-formed if: (1) different stores/CAS's to the same
+location store different values, (2) each register is written at most
+once, (3) stores/CAS's never store zero, (4) if-statements never test
+for zero, and (5) whenever an if-statement tests register $r$, there
+is a load/CAS into $r$ sequenced earlier in the same thread.
+%
+\end{definition}
+
+\subsection{From Executions to Litmus Tests}
+\label{sec:lits}
+
+Our strategy for solving $\GeneralProg$, as outlined in \S\ref{sec:intro:constraining_execs}, is summarised by the
+following `proof rule':
+%
+\begin{equation}
+\label{eq:proof_rule}
+\raisebox{1.5mm}{\small\begin{tabular}{@{}l@{~~}c@{}}
+Step 1: & $(X,Y)\in \GeneralExec(M,N,\triangleright)$
+\\
+Step 2: & 
+$(P,\sigma) \in \litmax(X) ~~~~ (Q,\sigma') \in \lit(Y) ~~~
+\sigma=\sigma' ~~~ P \blacktriangleright Q$
+\\ \midrule
+\rlap{Result:} & $(P,Q,\sigma)\in \GeneralProg(M,N,\blacktriangleright)$
+\end{tabular}}
+\end{equation}
+%
+The purpose of this subsection is to define the $\lit$ and $\litmax$
+functions. We begin by defining a more general constraint, $\litgen$.
+
+
+\begin{definition} 
+\label{def:lit}
+%
+The predicate $\litgen(X, P, \sigma, disabled, failures)$ serves to
+connect executions $X$ with litmus tests $(P,\sigma)$. The $disabled$
+argument is a subset of $P$'s components, which we interpret as those
+that do not actually execute when creating the execution $X$ (because
+they are guarded by an if-statement whose test failed). The $failures$
+argument is a subset of $P$'s CAS instructions, which we interpret as
+those that fail to carry out the `swap' when creating execution $X$.
+(Characterising executions by which instructions fail and which are
+disabled is only sensible because of our restriction to loop-free
+programs.) The predicate $\litgen(X,P,\sigma,disabled,failures)$ holds
+whenever there exists a bijection $\mu$ between $P$'s enabled
+instructions and $X$'s events such that the following conditions all
+hold (in which we abbreviate $\mu(i)$ as $\mu_i$):
+%
+\begin{description}
+
+\item[Conditionals] For an if-statement with condition `$r=v$', the
+body is enabled iff both the if-statement is enabled and
+$\sigma(r) = v$.
+
+\item[Disabled loads] If a load/CAS into register $r$ is disabled,
+then $\sigma(r)=0$.
+
+\item[Unguarded components] Any component not guarded by an
+if-statement is enabled.
+
+\item[CAS failures] For every enabled CAS $i$ in $P$: $i$ is in
+$failures$ iff there is no $j$ with
+$(\mu_j,\mu_i)\in{rf}$ that writes the value $i$
+expects.
+
+\item[Instruction types] For every enabled instruction $i$ in $P$: $i$
+is a store iff $\mu_i\in {W}-{R}$; $i$ is a load or
+a failed CAS iff $\mu_i\in {R}-{W}$; $i$ is a
+successful CAS iff $\mu_i\in {R}\cap {W}$; and $i$
+is a fence iff $\mu_i\in {F}$.
+
+\item[Non-atomic locations] If $i$ is an enabled non-fence instruction
+in $P$ then $\mu_i\in {nal}$ iff $i$'s location is in
+$\NALoc$.
+
+\item[Threading, locations, and dependencies] For every enabled
+instructions $i$ and $j$ in $P$: $(\mu_i,\mu_j)\in {sthd}$ iff $i$ and
+$j$ are in the same thread in $P$; $(\mu_i,\mu_j)\in {sloc}$ iff $i$
+and $j$ both access the same location; $(\mu_i,\mu_j)\in {cd}$ iff
+there is an enabled if-statement, say $T$, such that $i$ is sequenced
+before $T$, $i$ writes to the register $T$ tests, and $j$ is in $T$'s
+body; $(\mu_i,\mu_j)\in {ad}$ iff the expression for $j$'s location
+depends (syntactically) on the register written by $i$; and
+$(\mu_i,\mu_j)\in {dd}$ iff $j$ writes an expression that depends
+(syntactically) on the register $i$ writes.
+
+\item[Sequenced composition] For every enabled $\join$-operator in
+$P$: if $i$ and $j$ are enabled instructions in the left and right
+operands (respectively), then $(\mu_i,\mu_j)\in {sb}$.
+
+\item[Unsequenced composition] For every enabled $+$-operator in $P$:
+if $i$ and $j$ are enabled instructions in the left and right operands
+(respectively), then
+$\{(\mu_i,\mu_j), (\mu_j,\mu_i)\} \ncap {sb}$.
+
+\item[Final registers] For every enabled load/CAS $j$ in $P$ on
+location $x$ into register $r$: either (1) there exists an enabled
+store/CAS $i$ that writes $v$ to $x$, $(\mu_i,\mu_j)\in {rf}$ and
+$\sigma(r) = v$, or (2) $\sigma(r) = 0$ and $\mu_j$ is not in the
+range of ${rf}$.
+
+\item[Final locations] For every location $x$: either (1) there is an
+enabled store/CAS $i$ that writes $v$ to $x$, $\mu_i$ has no
+successor in ${co}$, and $\sigma(x) = v$, or (2) $x$ is never written
+and $\sigma(x) = 0$.
+
+\end{description}
+\end{definition}
+
+\begin{definition}[Obtaining litmus tests]
+%
+Let $\lit(X)$ be the set of all litmus tests $(P,\sigma)$ for
+which $\litgen(X,P,\sigma,disabled,failures)$ holds for some
+instantiation of $disabled$ and $failures$.
+%
+\end{definition}
+
+\begin{definition}[Obtaining minimal litmus tests]
+%
+Let $\litmax(X)$ be the set of all litmus tests $(P,\sigma)$ for
+which $\litgen(X,P,\sigma,\emptyset,\emptyset)$ holds. That is, when
+$P$ behaves like $X$, all of its instructions are executed and all of
+its CAS's succeed. We say that the litmus test $(P,\sigma)$ is
+\emph{minimal} for $X$, or, dually, $X$ is a \emph{maximal}
+execution of $P$.
+%
+\end{definition}
+
+\begin{definition}[Candidate executions]
+\label{def:candidate_executions}
+%
+We define $P$'s candidate executions by inverting $\lit$:
+$\cand{P} \eqdef \{X\mid \exists \sigma\ldotp (P,\sigma)\in\lit(X)\}$.
+%
+\end{definition}
+
+\begin{definition}[Observable final states] We can now formally define the
+notion of observation we employed in
+Def.~\ref{def:general_problem_programs}: $\obs_M(P)$ is the set of
+final states $\sigma$ for which $(P,\sigma) \in \lit(X)$ for some $X \in \sem{P}_M$.
+\end{definition}
+
+
+\subsection{Totality of $\litmax$}
+\label{sec:nfreedom}
+
+We now explain why the $\litmax$ function is currently not total (that
+is: there exist well-formed executions $X$ for which $\litmax(X)$ is
+empty), and how we can impose an additional restriction on executions
+to make it become total.
+
+The problem is: our programming language cannot express all of the
+sequencing patterns that an execution can capture in a valid $sb$
+relation. For instance, it is not possible to write a program that
+generates exactly the following $sb$ edges:
+%
+\begin{equation}
+\label{eq:Nshape}
+\begin{tikzpicture}[baseline=0.5cm,inner sep=1pt]
+\node (a) at (0,0.8) {$\vphantom{Ay}a$};
+\node (b) at (1,0.8) {$\vphantom{Ay}b$};
+\node (c) at (0,0) {$\vphantom{Ay}c$};
+\node (d) at (1,0) {$\vphantom{Ay}d$};
+\draw[edgesb] (a) to [auto,swap,pos=0.3] node {$sb$} (c);
+\draw[edgesb] (a) to [auto] node {$sb$} (d);
+\draw[edgesb] (b) to [auto,pos=0.3] node {$sb$} (d);
+\end{tikzpicture}
+\end{equation}
+%
+This is because, armed only with sequenced (`$\join$') and unsequenced
+(`$+$') composition (see Fig.~\ref{fig:pl}), it is only possible to
+produce $sb$ relations that are in the set of \emph{series--parallel
+partial orders}~\cite{mohring89}.\footnote{That said, if we extended our language
+to support fork/join parallelism, then the execution
+in~\eqref{eq:Nshape} would become possible: "t1=fork($b$); $a$;
+t2=fork($c$); join(t1); $d$; join(t2)."} Helpfully, series--parallel
+partial orders are characterised exactly by a simple check: that they
+do not contain the `N'-shaped subgraph shown
+in~\eqref{eq:Nshape}~\cite{valdes+79}. Accordingly, we impose one
+further well-formedness constraint on executions:
+%
+\[
+\stack{\nexists a,b,c,d \in
+E\ldotp{}\\{}\quad \{(a,c),(a,d),(b,c)\}\in sb
+\wedge  \{(a,b),(b,c),(c,d)\}\ncap sb^?.}
+\]
+
+Our $\litmax$ function now becomes total (and hence $\lit$ too).
+Indeed, it is straightforward to determinise the constraints listed in
+Def.~\ref{def:lit} into an algorithm for
+\emph{constructing} litmus tests from executions (and we have
+implemented this algorithm, in Java).
+
+\subsection{Dead Executions}
+\label{sec:safety}
+
+When searching for inconsistent executions, we restrict our search to those that are also
+\emph{dead}. 
+
+\begin{definition}[Semantic deadness] The set of executions that are
+(semantically) dead under MCM $M$ is given by $semdead_M \eqdef {}$
+%
+\[
+\stack{\{X\in\Exec \mid X \notin consistent_M \Rightarrow \forall P,\sigma,X',\sigma'\ldotp {}\\
+\quad ((P,\sigma)\in\litmax(X) \wedge (P,\sigma')\in\lit(X') \wedge X' \in
+consistent_M) \\
+\quad\quad {} \Rightarrow (X' \in racefree_M \wedge \sigma'\neq\sigma)\}.}
+\]
+%
+That is, for any minimal litmus test $(P,\sigma)$ for $X$,
+no consistent candidate execution of $P$ is racy or reaches
+$\sigma$. In other words: $(P,\sigma)$ must fail under $M$.
+\end{definition}
+%
+
+
+\begin{figure}
+\begin{myFrame}{$dead$}
+\begin{mathpar}
+\labelb{eq:safe:rfcd}~
+\mathrm{domain}(cd) \subseteq \mathrm{range}(rf)
+\and
+\labelb{eq:safe:forcedco}~
+imm(co) \join imm(co) \join imm(co^{-1}) \subseteq rf^? \join (sb \join (rf^{-1})^?)^?
+\end{mathpar}
+\end{myFrame}
+\par\vspace*{-2mm}
+\begin{myFrame}{$dead_{\rm C11}$}
+\begin{mathpar}
+\labelb{eq:safe:hw}~
+dead
+\and
+\labelb{eq:safe:ur}~
+cnf \cap \sthd \subseteq sb \cup sb^{-1}
+\and
+\labelb{eq:safe:cnf}~
+pdr \subseteq dhb \cup dhb^{-1} \cup (narf\join ssc) \cup (ssc\join narf^{-1})
+\end{mathpar}
+\end{myFrame}
+\begin{mathpar}
+pdr \eqdef cnf - A^2
+\and
+cde \eqdef (rfe \cup cd)^* \join cd % changed from (rf - \sthd) to rfe
+\and
+drs \eqdef rs - (\stor{R} \join \comp{cde})
+\and
+dsw \eqdef sw \cap (((Fsb^? \join \stor{rel} \join drs^?) - (cd^{-1} \join \comp{cde}))
+\join rf)
+\and
+dhb \eqdef sb^? \join (dsw \join cd)^*
+\and
+ssc \eqdef \id \cap cde
+\and
+narf \eqdef rf \cap nal^2 - hb
+\end{mathpar}
+\caption{The $dead$ constraint and its specialisation for C11}
+\label{fig:c11dead}
+\end{figure}
+
+We employ syntactic approximations of semantic deadness.
+Figure~\ref{fig:c11dead} shows how this approximation is defined
+for any architecture-level MCM that enforces coherence
+($dead$), and how it is strengthened to handle the C11 MCM
+($dead_{\rm C11}$).
+
+At the architecture level, we need not worry about races, so ensuring
+deadness is straightforward. In what follows, let $X$ be an
+inconsistent execution, $(P,\sigma)$ be a minimal litmus test of $X$,
+and $X'$ be another candidate execution of $P$. First, we require every
+event that is the source of a control dependency to read from a
+non-initial write~\refb{eq:safe:rfcd}. This ensures that $P$ need not
+contain `$\mathbf{if}~"r"=0$'. Such programs are problematic because
+we cannot tell whether the condition holds because "r" was set to zero
+or because "r" was never assigned. Second, we require that every $co$
+edge (except the last) is justified by an $sb$
+edge~\refb{eq:safe:forcedco}. This condition ensures that $X'$ cannot
+be made consistent simply by inverting one or more of $X$'s $co$
+edges. The construction $imm(co)$ obtains event pairs $(e_1,e_2)$ that
+are consecutive in $co$; composing this with
+`$imm(co)\join imm(co^{-1})$' restricts our attention to those pairs
+for which it is possible to take a further $co$ step from $e_2$. The
+last $co$ edge does not need justifying with an $sb$ edge because it
+is directly observable in $\sigma$.
+%
+\begin{Example} 
+\label{ex:badtest_co}
+The basic execution below (left) is inconsistent in any MCM that
+imposes coherence (because $co$ is contradicting $sb$), but the litmus
+test obtained from it (below right) does not necessarily fail because
+its final state can be obtained via a consistent execution that simply
+reverses the $co$ edge from $(b,a)$ to $(a,b)$.
+%
+\begin{center}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0.8) {$\evtlbl{$a$}\evW{}{"x"}{2}$};
+\node (b) at (0,0) {$\evtlbl{$b$}\evW{}{"x"}{1}$};
+\node (c) at (2.0,0.8) {$\evtlbl{$c$}\evW{}{"x"}{3}$};
+\node (d) at (2.0,0) {$\evtlbl{$d$}\evR{}{"x"}{3}$};
+\draw[edgerf, shift right=0.5mm, inner sep=1mm] (c) to [auto, swap] node {$rf$} (d);
+\draw[edgesb, shift left=0.5mm, inner sep=1mm] (a) to [auto] node {$sb$} (b);
+\draw[edgesb, shift left=0.5mm, inner sep=1mm] (c) to [auto] node {$sb$} (d);
+\draw[edgemo, shift left=0.5mm, inner sep=1mm] (b) to [auto] node {$co$} (a);
+\draw[edgemo] (a) to [auto] node {$co$} (c);
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)(d)] {};
+\node at (5.3,0.4) {$\litmustestIsmall{int x=0;}{
+\quad\texttt{x=2; x=1;} \\[-1.6mm]
+\quad\rule{14.5mm}{0.4pt} \\[-2.7mm]
+\quad\rule{14.5mm}{0.4pt} \\
+\quad\texttt{x=3; r0=x;} \\
+}{x==3 \&\& r0==3}$};
+\end{tikzpicture}
+\end{center}
+\end{Example}
+%
+At the software level, we must also worry about races. First, we
+forbid all unsequenced races~\refb{eq:safe:ur}, because if $X$ does
+not have an unsequenced race, then neither will $X'$, because
+unsequenced races are not affected by runtime synchronisation
+behaviour. Second, condition~\refb{eq:safe:cnf} is concerned with
+\emph{potential data races} ($pdr$): events that conflict and are not
+both atomic. Although $X$ is inconsistent (which renders any races in
+$X$ irrelevant) we worry that $X'$ might be consistent and racy.  So,
+we require $pdr$-linked events to be also in the \emph{dependable
+happens-before} ($dhb$) relation, or to exhibit a
+\emph{self-satisfying cycle} ($ssc$), both of which we explain below.
+
+\paragraph{Dependable happens-before}
+This is a restriction of ordinary happens-before ($hb$). Essentially:
+if $e_1$ and $e_2$ are in $dhb$ in $X$, and they map to instructions
+$i_1$ and $i_2$ respectively in $P$, then if $i_1$ and $i_2$ are
+represented by events in $X'$, those events are guaranteed to be
+related by happens-before.
+
+\begin{Example}
+\label{ex:lb_bad_rs}
+The execution below (left) has fixed the shortcoming in
+Example~\ref{ex:lb_without_cd} by adding control dependencies, but it
+has introduced the C11 \emph{release sequence} as a further
+complexity.
+%
+\begin{center}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0.8) {\evtlbl{$a$}$\evR{\na}{"a"}{1}$};
+\node (b) at (0,0) {\evtlbl{$b$}$\evW{\morel}{"x"}{1}$};
+\node (c) at (0,-0.8) {\evtlbl{$c$}$\evW{\morlx}{"x"}{2}$};
+\node (d) at (2,0) {\evtlbl{$d$}$\evR{\moacq}{"x"}{2}$};
+\node (e) at (2,-0.8) {\evtlbl{$e$}$\evW{\na}{"a"}{1}$};
+\draw[edgerf] (c) to [auto, pos=0.4, swap] node {$rf$} (d);
+\draw[edgerf] (e) to [auto, out=160, in=0, swap, pos=0.8] node {$rf$} (a);
+\draw[edgesb] (a) to [auto] node {$sb$,$cd$} (b);
+\draw[edgesb, shift left=0.5mm,inner sep=1mm] (b) to [auto,pos=0.4] node {$sb$} (c);
+\draw[edgemo, shift right=0.5mm,inner sep=1mm] (b) to [auto, swap,pos=0.4] node {$co$} (c);
+\draw[edgesb] (d) to [auto] node {$sb$,$cd$} (e);
+\node[sthd, fit=(a)(b)(c)] {};
+\node[sthd, fit=(d)(e)] {};
+
+\node at (5.3,0.0) {$\litmustestIsmall{int a=0; atomic\_int x=0;}{
+\quad\texttt{r0=a;} \\
+\quad\texttt{if(r0==1) x.store(1,\morel);} \\
+\quad\texttt{x.store(2,\morlx);} \\[-1.6mm]
+\quad\rule{36.5mm}{0.4pt} \\[-2.7mm]
+\quad\rule{36.5mm}{0.4pt} \\
+\quad\texttt{r1=x.load(\moacq);} \\
+\quad\texttt{if(r1==2) a=1;} \\
+}{r0==1 \&\& r1==1}$};
+\end{tikzpicture}
+\end{center}
+%
+Although event $d$ synchronises with $b$, it actually obtains its
+value from $c$, in $b$'s release sequence. The execution is not
+semantically dead because its litmus test (above right) is racy: if
+"r0" is not assigned $1$, then the release store is not executed; this
+means that "r1" can read $2$ without synchronisation having occurred;
+this leads to a race on "a". By subtracting
+$(cd^{-1}\join \comp{cde})$ in the definition of $dsw$, we ensure that
+whatever controls $b$ also controls $c$, and this rules out
+undesirable executions like the one above.
+
+Moreover, the $(\stor{R}\join \comp{cde})$ in the definition of $drs$
+ensures that if $b$ is an RMW, it controls the execution of $c$. The
+effect is that $c$ is not executed if the CAS corresponding to the RMW
+fails.
+%
+\end{Example}
+
+% \begin{Example}
+% \label{ex:lb_upward_rs}
+% The execution below (left) meets the control dependency requirements related discussed in
+% Example~\ref{ex:lb_bad_rs}, but still gives rise to a litmus test
+% (right) that is racy.
+% \begin{center}
+% \begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+% \node (a) at (0,0.8) {\evtlbl{$a$}$\evR{\morlx}{"y"}{1}$};
+% \node (b) at (0,0) {\evtlbl{$b$}$\evW{\morlx}{"x"}{2}$};
+% \node (c) at (0,-0.8) {\evtlbl{$c$}$\evW{\morel}{"x"}{1}$};
+% \node (d) at (2.2,0.8) {\evtlbl{$d$}$\evR{\morlx}{"x"}{1}$};
+% \node (e) at (2.2,0) {\evtlbl{$e$}$\evR{\moacq}{"x"}{2}$};
+% \node (f) at (2.2,-0.8) {\evtlbl{$f$}$\evW{\na}{"y"}{1}$};
+% \draw[edgerf] (c) to [auto, out=20, in=180, pos=0.2, swap] node {$rf$} (d);
+% \draw[edgerf] (b) to [auto, swap] node {$rf$} (e);
+% \draw[edgerf] (f) to [auto, out=160, in=0, pos=0.2] node {$rf$} (a);
+% \draw[edgesb] (a) to [auto] node {$sb$,$cd$} (b);
+% \draw[edgesb, shift left=0.5mm, inner sep=1mm] (b) to [auto] node {$sb$} (c);
+% \draw[edgemo, shift left=0.5mm, inner sep=1mm] (c) to [auto] node {$co$} (b);
+% \draw[edgesb] (d) to [auto] node {$sb$} (e);
+% \draw[edgesb] (e) to [auto] node {$sb$,$cd$} (f);
+% \node[sthd, fit=(a)(b)(c)] {};
+% \node[sthd, fit=(d)(e)(f)] {};
+
+% \node at (5.3,0.0) {$\litmustestIsmall{atomic\_int x=0,y=0;}{
+% \quad\texttt{r0=y.load(\morlx);} \\
+% \quad\texttt{if(r0==1) x.store(2,\morlx);} \\
+% \quad\texttt{x.store(1,\morel);} \\[-1.6mm]
+% \quad\rule{36.5mm}{0.4pt} \\[-2.7mm]
+% \quad\rule{36.5mm}{0.4pt} \\
+% \quad\texttt{r1=x.load(\morlx);} \\
+% \quad\texttt{r2=x.load(\moacq);} \\
+% \quad\texttt{if(r2==2) y=1;} \\
+% }{r0==1 \&\& r1==1}$};
+% \end{tikzpicture}
+% \end{center}
+% %
+% The execution's race-freedom, depends on $a$ and $f$ being separated
+% by happens-before, which depends on $e$ acquiring from $b$, which is
+% in $c$'s release sequence because it is $co$-after $c$. However,
+% should the $co$ edge be inverted, $b$ will no longer be in $c$'s
+% release sequence. This explains the $((sb \cap \sloc)\join rf^*)$
+% conjunct in the definition of $drs$, which provides an alternative
+% formulation of the release sequence that does not depend on $co$.
+% \JWComment{Cite~\cite{vafeiadis+15} for this.} 
+% %
+% \end{Example}
+
+\paragraph{Self-satisfying cycles}
+
+An event occurs in a self-satisfying cycle ($ssc$) if it is connected
+to itself via a chain of $cd$ and $rf$ edges that ends with a control
+dependency. The if-statements that create these dependencies are
+constructed such that their bodies are only executed if the desired
+$rf$ edges are present (cf.~Def.~\ref{def:lit}).
+
+A potential race between $e_1$ and $e_2$ is deemed dead if both access
+a non-atomic location, $e_1$ is observed by $e_2$ but does not happen
+before it, and $e_2$ is in a self-satisfying cycle. The reasoning is
+as follows. First, note that the execution is inconsistent, because
+reads of non-atomic locations cannot observe writes that do not happen
+before them (c.f.~\refb{eq:c11c:narf}). Second, the self-satisfying
+cycle ensures that $e_2$ reads from $e_1$ in \emph{every} candidate
+execution that includes those events. Therefore, every candidate
+execution is inconsistent and any data races can be safely ignored. We
+illustrate this reasoning in the following example.
+
+\begin{Example}
+\label{ex:c11_not_mono}
+The execution below (left) is inconsistent because $f$ reads a non-atomic location from a write ($a$) that does
+not happen before $f$. It is dead because $f$ is in a self-satisfying
+cycle. Its litmus test (below right) is not racy because the
+conditionals ensure that the right-hand thread's load of "a" is only
+executed if it obtains the value $1$, which means that it reads from
+the left-hand thread's store to "a", which means that the execution is
+inconsistent and hence that any races can be ignored.
+%
+\begin{center}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node[event, anchor=west](a) at (0,2.4) 
+{\evtlbl{$a$}$\evW{\na}{"a"}{1}$};
+
+\node[event, anchor=west](b) at (0,1.6)
+{\evtlbl{$b$}$\evF{\morlx}$};
+
+\node[event, anchor=west](c) at (0,0.8) 
+{\evtlbl{$c$}$\evR{\morlx}{"y"}{1}$};
+
+\node[event, anchor=west](d) at (0,0) 
+{\evtlbl{$d$}$\evW{\morlx}{"x"}{1}$};
+
+\node[event, anchor=west](e) at (2.1,1.6) 
+{\evtlbl{$e$}$\evR{\moacq}{"x"}{1}$};
+
+\node[event, anchor=west](f) at (2.1,0.8) 
+{\evtlbl{$f$}$\evR{\na}{"a"}{1}$};
+
+\node[event, anchor=west](g) at (2.1,0) 
+{\evtlbl{$g$}$\evW{\morlx}{"y"}{1}$};
+
+\foreach \i/\j in {a/b, b/c}
+\draw[edgesb] ([xshift=7mm]\i.south west) to[auto,pos=0.4]
+node{$sb$} ([xshift=7mm]\j.north west -| \i.south west);
+
+\foreach \i/\j in {c/d, e/f, f/g}
+\draw[edgesb] ([xshift=7mm]\i.south west) to[auto,pos=0.4]
+node{$sb$,$cd$} ([xshift=7mm]\j.north west -| \i.south west);
+
+\draw[edgerf] (d) to[auto,pos=0.65, out=20, in=200] node{$rf$} (e);
+\draw[edgerf] (g) to[auto, pos=0.3, out=150, in=0] node{$rf$} (c);
+\draw[edgerf] (a) to[auto, out=330, in=150, pos=0.45] node{$rf$} (f);
+
+\node[sthd, fit=(a)(b)(c)(d)] {};
+\node[sthd, fit=(e)(f)(g)] {};
+
+\node at (6.0,1.2) {$\litmustestIsmall{int a=0; atomic\_int x,y=0;}{
+\quad\texttt{a=1; fence(\morlx);} \\
+\quad\texttt{r0=y.load(\morlx);} \\
+\quad\texttt{if(r0==1) x.store(1,\morlx);} \\[-1.6mm]
+\quad\rule{36.5mm}{0.4pt} \\[-2.7mm]
+\quad\rule{36.5mm}{0.4pt} \\
+\quad\texttt{r1=x.load(\moacq);} \\
+\quad\texttt{if(r1==1) r2=a;} \\
+\quad\texttt{if(r2==1) y.store(1,\morlx);} \\
+}{r0==1 \&\& r1==1 \&\& r2==1}$};
+\end{tikzpicture}
+\end{center}
+%
+\end{Example}
+
+\paragraph{Checking deadness} 
+The constraints that define $dead_M$ are quite subtle, particularly
+for complex MCMs like C11. Fortunately, we can use Alloy to check that
+these constraints imply semantic deadness, by seeking elements of
+$dead_M - semdead_M$. That is: we search for an execution $X$ that is
+deemed dead, but which gives rise to a litmus test $(P,\sigma)$ that
+has, among its candidates, a consistent execution $X'$ that is either
+racy or reaches $\sigma$. We were able to check that
+$dead_M \subseteq semdead_M$ holds for all executions with no
+more than 8 events; beyond this, Alloy timed out (after four hours).
+
+\begin{remark} We are using Alloy here to search all candidate
+executions of a program, yet in~\S\ref{sec:intro:constraining_execs}
+we argued that it is impractical to phrase constraints over programs
+because to do so would necessitate an expensive search over all
+candidate executions of a program. We emphasise that this is not a
+contradiction. The formula to which we objected had a problematic
+$\exists\forall$ pattern: `show that \emph{there exists} a program
+such that \emph{for all} of its candidate executions, a certain
+property holds', whereas satisfying $dead_M - semdead_M$ requires only
+existential quantification. \end{remark}
+
+\subsection{Practical Considerations}
+\label{sec:practical}
+
+We have found that Step 2 of our proof rule~\eqref{eq:proof_rule} can
+still be hard for Alloy to solve, often leading to timeouts,
+particularly when $X$ and $Y$ are large. The search space is
+constrained quite tightly by the values of $X$ and $Y$, but there are
+still many variables involved. One of the degrees of flexibility in
+choosing $P$ and $Q$ is in the handling of if-statements. For
+instance, both~\refb{eq:if_version1} and~\refb{eq:if_version2} below
+give rise to the same executions because of our well-formedness
+restrictions on programs (Def.~\ref{def:wf_prog}):
+%
+\begin{mathpar}
+\labelb{eq:if_version1}~
+\mathbf{if}~b~\mathbf{then}~(C_1\join C_2)
+\and
+\labelb{eq:if_version2}~
+(\mathbf{if}~b~\mathbf{then}~C_1)\join (\mathbf{if}~b~\mathbf{then}~C_2).
+\end{mathpar}
+
+In response to these difficulties, we designed (and implemented in
+Java) a \emph{deterministic} algorithm for $\litmax$ (as mentioned in
+\S\ref{sec:nfreedom}), called $\litmaxdet$. In particular, it always
+chooses option~\refb{eq:if_version2} over
+option~\refb{eq:if_version1}. In practice, we find it quicker to
+obtain $(P,Q,\sigma)$ by constructing $(P,\sigma) = \litmaxdet(X)$ and
+$(Q,\sigma') = \litmaxdet(Y)$, rather than by solving the four
+constraints in Step 2 of~\eqref{eq:proof_rule}. This approach
+satisfies the third constraint of Step 2 ($\sigma = \sigma'$) because
+all of the $\triangleright$ relations that we consider in this work
+ensure that $X$ and $Y$ have the same $co$ and $rf$ edges and hence
+reach the same final state. It does not, however, guarantee
+$P\blacktriangleright Q$. In particular, if a compiler mapping sends
+`$"A"$' to `$"B"\join"C"$', then our algorithm would suggest,
+unrealistically, that `$\mathbf{if}~b~\mathbf{then}~"A"$' can compile
+to
+`$(\mathbf{if}~b~\mathbf{then}~"B")\join
+(\mathbf{if}~b~\mathbf{then}~"C")$'.  In our experience, the generated
+$P$'s and $Q$'s are sufficiently close to being related by
+$\blacktriangleright$ that the discrepancy does not matter.
+
+In fact, we do not even prove that \eqref{eq:proof_rule} is guaranteed
+to provide a valid solution to $\GeneralProg$, nor that a solution
+even necessarily exists. Such a proof would be highly fragile, being
+dependent on intricacies of the deadness constraint, which in turn
+depends on intricacies of various MCMs, many of which may be revised
+in the future. Instead, we follow the `lightweight, automatic'
+approach extolled elsewhere in this paper. Besides using Alloy to
+check the definition of $dead$ (as described in~\S\ref{sec:safety}),
+we also implemented (in Java) a basic MCM simulator to enumerate the
+candidate executions of each litmus test we generate, to ensure that
+must-fail litmus tests really must fail. We would have preferred to
+have used an existing simulator like \textsf{herd}~\cite{alglave+14}
+or CppMem~\cite{batty+11}, but we found both tools to be unsuitable
+because of restrictions they impose on litmus tests:
+\textsf{herd} cannot handle $sb$ being partial within a thread, and
+CppMem cannot handle if-statements that test for particular values.
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

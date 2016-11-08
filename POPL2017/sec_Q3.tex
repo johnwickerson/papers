@@ -1,0 +1,134 @@
+\section{Application: Checking Monotonicity (\Q3)}
+\label{sec:monotonicity}
+
+In this section, we rediscover two monotonicity violations in the C11
+MCM, whereby a new behaviour is enabled either by sequentialisation
+(\S\ref{sec:Q3_c11_seq}) or by strengthening a memory order
+(\S\ref{sec:Q3_c11_mo}).
+
+\begin{figure}
+\centering
+\begin{myFrame}{$strengthen(X,Y)$}
+\begin{mathpar}
+\labelb{eq:monot:ev}~
+\field{X}{E} = \field{Y}{E}
+\and
+\labelb{eq:monot:r}~
+\field{X}{R} = \field{Y}{R}
+\and 
+\labelb{eq:monot:w}~
+\field{X}{W} = \field{Y}{W}
+\and 
+\labelb{eq:monot:f}~
+\field{X}{F} = \field{Y}{F} 
+\and
+\labelb{eq:monot:nal}~
+\field{X}{nal} = \field{Y}{nal} 
+\and
+\labelb{eq:monot:sb}~
+\field{X}{sb} \subseteq \field{Y}{sb}
+\and
+\labelb{eq:monot:ad}~
+\field{X}{ad} \subseteq \field{Y}{ad}
+\and
+\labelb{eq:monot:cd}~
+\field{X}{cd} \subseteq \field{Y}{cd}
+\and
+\labelb{eq:monot:dd}~
+\field{X}{dd} \subseteq \field{Y}{dd}
+\and
+\labelb{eq:monot:sthd}~
+\field{X}{\sthd} \subseteq \field{Y}{\sthd}
+\and
+\labelb{eq:monot:sloc}~
+\field{X}{\sloc} = \field{Y}{\sloc}
+\and
+\labelb{eq:monot:rf}~
+\field{X}{rf} = \field{Y}{rf}
+\and
+\labelb{eq:monot:co}~
+\field{X}{co} = \field{Y}{co}
+\end{mathpar}
+\end{myFrame}
+\caption{`Strengthening' an execution}
+\label{fig:strengthen}
+\end{figure}
+
+Checking monotonicity requires the relation defined in
+Fig.~\ref{fig:strengthen}, which holds when one execution is
+`stronger' than another. There is almost an isomorphism between $X$
+and $Y$, except that $Y$ may have extra $sb$ and dependency
+edges~\refb{eq:monot:sb}~\refb{eq:monot:ad}~\refb{eq:monot:cd}~\refb{eq:monot:dd},
+and it may interleave multiple threads together~\refb{eq:monot:sthd}.
+
+% When Alloy finds $X$ and $Y$ that witness non-monotonicity at the
+% execution level ($X$ is inconsistent, $Y$ is consistent, and $Y$ is
+% stronger than $X$), we search for programs $P$ and $Q$ that witness
+% non-monotonicity at the source-code level. We constrain $P$ and $Q$
+% to have $X$ and $Y$ as maximal candidate executions respectively,
+% and $Q$ to be stronger than $P$ in the sense that $P$ and $Q$
+% contain the same instructions, control dependencies and sequencing
+% between instructions in $P$ are preserved in $Q$, and instructions
+% in the same thread in $P$ are in the same thread in $Q$.
+
+\subsection{Monotonicity of C11 w.r.t. Sequencing}
+\label{sec:Q3_c11_seq}
+One way to extend the $strengthen$ relation to the C11 setting is to
+add the following constraints:
+%
+\begin{mathpar}
+\field{X}{A} = \field{Y}{A} 
+\and
+\field{X}{acq} = \field{Y}{acq} 
+\and
+\field{X}{rel} = \field{Y}{rel} 
+\and
+\field{X}{sc} = \field{Y}{sc}.
+\end{mathpar}
+%
+With this notion of strengthening, Alloy found a pair of 6-event
+executions that witness a monotonicity violation in C11. They are
+almost identical to those given by Vafeiadis et
+al.~\cite[Fig.~1]{vafeiadis+15}, though slightly less elegant: Alloy
+chose one of the writes to be SC when a relaxed write would have
+sufficed.
+
+\subsection{Monotonicity of C11 w.r.t. Memory Orders}
+\label{sec:Q3_c11_mo}
+Another way to extend the $strengthen$ relation is to add
+%
+\begin{mathpar}
+\field{X}{A} = \field{Y}{A} 
+\and
+\field{X}{acq} \subseteq \field{Y}{acq} 
+\and
+\field{X}{rel} \subseteq \field{Y}{rel} 
+\and
+\field{X}{sc} \subseteq \field{Y}{sc}
+\and
+\field{X}{sb} = \field{Y}{sb}
+\and
+\field{X}{ad} = \field{Y}{ad}
+\and
+\field{X}{cd} = \field{Y}{cd}
+\and
+\field{X}{dd} = \field{Y}{dd}
+\and
+\field{X}{\sthd} = \field{Y}{\sthd}
+\end{mathpar}
+%
+which allows memory orders to be strengthened but forbids changes
+to sequencing or threading. Using this notion of strengthening, Alloy
+found a 7-event monotonicity violation in C11: the execution
+previously given in Example~\ref{ex:c11_not_mono}. That execution is
+inconsistent, but if the relaxed fence is strengthened to a release
+fence, it becomes consistent. This example is similar to one due to
+Vafeiadis et al.~\cite[\S3, \emph{Strengthening is
+Unsound}]{vafeiadis+15}, but it is simpler: where theirs requires 8
+events, 4 locations, and 3 threads, our Alloy-generated example
+requires only 7 events, 3 locations, and 2 threads.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

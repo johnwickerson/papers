@@ -1,0 +1,65 @@
+\section{Application: Generic Properties (\Q5, \Q2)}
+In this section we use our tool to validate two generic properties of
+memory models: SC-DRF and multi-copy atomicity.
+
+
+
+\subsection{Seeking SC-DRF Violations (\Q5)}
+\label{sec:scdrf}
+
+This section reports on our use of Alloy to search for violations of
+the SC-DRF guarantee in an early draft of the C11 MCM. The
+SC-DRF guarantee, in the C11 context, is that if a program is
+race-free and involves no atomic operations that are not
+"memory\_order\_seq\_cst", then it has only SC semantics.
+
+We search for an execution that satisfies
+\[
+\stack{\exists X\in\Exec\ldotp \field{X}{A} \subseteq \field{X}{sc}
+\wedge {}\\{} \quad X\in dead_{\mm{C11}}
+\cap consistent_{\mm{C11-Draft}} - consistent_{\mm{SC}}.}
+\]
+That is: we seek an execution that is dead (so that its corresponding
+litmus test is race-free), uses only SC atomics, and is consistent
+under the (draft) C11 MCM but inconsistent under \mm{SC}. The
+\mm{SC} MCM is characterised by
+%
+\begin{eqnarray*}
+consistent_{\mm{SC}} &\eqdef& acyclic(rf \cup co \cup fr \cup sb) \\
+racefree_{\mm{SC}} &\eqdef& true
+\end{eqnarray*}
+while the \mm{C11-Draft} MCM has the same axioms as those listed
+by Batty et al.~\cite{batty+16}, minus the `S4' axiom that was added
+by Batty et al.~\cite{batty+11} to fix exactly this issue.
+
+The execution found by Alloy
+%
+\begin{equation}
+\begin{tikzpicture}[inner sep=1pt, baseline=(a.base)]
+\node (a) at (0,0.8) {$\evW{\mosc}{"x"}{1}$};
+\node (b) at (0,0) {$\evW{\mosc}{"y"}{1}$};
+\node (c) at (1.8,0.8) {$\evW{\mosc}{"y"}{2}$};
+\node (d) at (1.8,0) {$\evR{\mosc}{"x"}{0}$};
+\draw[edgemo, shift right=0.5mm, inner sep=1mm] (b) to [auto, swap, pos=0.3] node {$co$} (c);
+\draw[edgesb, shift right=0.5mm, inner sep=1mm] (a) to [auto, swap] node {$sb$} (b);
+\draw[edgesb, shift right=0.5mm, inner sep=1mm] (c) to [auto, swap] node {$sb$} (d);
+\draw[edgeS, shift left=0.5mm, inner sep=1mm] (a) to [auto] node {$S$} (b);
+\draw[edgeS, shift left=0.5mm, inner sep=1mm] (b) to [auto, pos=0.7] node {$S$} (c);
+\draw[edgeS, shift left=0.5mm, inner sep=1mm] (c) to [auto] node {$S$} (d);
+\node[sthd, fit=(a)(b)] {};
+\node[sthd, fit=(c)(d)] {};
+\end{tikzpicture}
+\end{equation}
+%
+is similar that reported by Batty et al.~\cite{batty+11}. It is not SC
+because the read of "x" observes a stale value, but it is consistent
+under \mm{C11-Draft} because \JWComment{need to finish this sentence
+somehow!}.
+
+
+\input{mca.tex}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:
